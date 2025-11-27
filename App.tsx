@@ -29,7 +29,11 @@ import {
   Save,
   Hash,
   Star,
-  Trash2
+  Trash2,
+  Wrench,
+  Edit,
+  Search,
+  Info
 } from 'lucide-react';
 
 // --- ICONS MAPPING ---
@@ -79,7 +83,7 @@ const App: React.FC = () => {
   const [previousStatus, setPreviousStatus] = useState<GameStatus | null>(null);
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [allUsers, setAllUsers] = useState<User[]>([]); // For leaderboard
+  const [allUsers, setAllUsers] = useState<User[]>([]); // For leaderboard and admin
   
   // Auth Form States
   const [authForm, setAuthForm] = useState({ 
@@ -123,20 +127,38 @@ const App: React.FC = () => {
   });
   const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saved'>('idle');
 
-  // Load users for leaderboard when needed
+  // ADMIN STATE
+  const [adminSearch, setAdminSearch] = useState('');
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [adminEditForm, setAdminEditForm] = useState({
+    name: '',
+    age: '',
+    gender: '' as 'Kişi' | 'Qadın' | '',
+    password: '',
+    totalPoints: 0
+  });
+
+  // Help Modal State
+  const [showHelp, setShowHelp] = useState(false);
+
+  // Load users on mount and when needed
   const refreshLeaderboard = async () => {
     const users = await dbService.getUsers();
     setAllUsers(users);
   };
 
   useEffect(() => {
-    if (gameStatus === GameStatus.LEADERBOARD) {
+    refreshLeaderboard();
+  }, []);
+
+  useEffect(() => {
+    if (gameStatus === GameStatus.LEADERBOARD || gameStatus === GameStatus.ADMIN_DASHBOARD) {
       refreshLeaderboard();
     }
   }, [gameStatus]);
 
   // --- AUTH LOGIC ---
-
+  
   // Username validation effect
   useEffect(() => {
     if (!authForm.username) {
@@ -228,6 +250,7 @@ const App: React.FC = () => {
     if (success) {
       setCurrentUser(newUser); 
       setRegistrationSuccess(true);
+      refreshLeaderboard(); // Update stats
     } else {
       setAuthError("Qeydiyyat xətası baş verdi. İnterneti yoxlayın.");
     }
@@ -249,7 +272,6 @@ const App: React.FC = () => {
     const foundUser = users.find(u => u.username === authForm.username && u.password === authForm.password);
 
     if (foundUser) {
-      // Legacy support fix
       if (!foundUser.seenQuestions) foundUser.seenQuestions = [];
       setCurrentUser(foundUser);
       setGameStatus(GameStatus.AUTH_CHOICE);
@@ -276,16 +298,16 @@ const App: React.FC = () => {
       updatedUser.completedTopics.push(topicCompleted);
     }
     
-    // Save to DB
     const success = await dbService.updateUser(currentUser.username, {
       totalPoints: updatedUser.totalPoints,
       gamesPlayed: updatedUser.gamesPlayed,
       completedTopics: updatedUser.completedTopics,
-      seenQuestions: updatedUser.seenQuestions // Ensure synced
+      seenQuestions: updatedUser.seenQuestions 
     });
 
     if (success) {
       setCurrentUser(updatedUser);
+      refreshLeaderboard();
     }
   };
 
@@ -294,11 +316,7 @@ const App: React.FC = () => {
     if (currentUser.seenQuestions.includes(questionText)) return;
 
     const updatedList = [...currentUser.seenQuestions, questionText];
-    
-    // Optimistic UI update
     setCurrentUser({ ...currentUser, seenQuestions: updatedList });
-
-    // DB Update
     await dbService.updateUser(currentUser.username, { seenQuestions: updatedList });
   };
 
@@ -318,16 +336,48 @@ const App: React.FC = () => {
        setCurrentUser({ ...currentUser, ...updates });
        setProfileSaveStatus('saved');
        setTimeout(() => setProfileSaveStatus('idle'), 2000);
+       refreshLeaderboard();
     }
   };
 
-  // ADMIN FUNCTION
+  // ADMIN FUNCTIONS
   const handleDeleteUser = async (usernameToDelete: string) => {
     if (window.confirm(`${usernameToDelete} istifadəçisini silmək istədiyinizə əminsiniz?`)) {
       const success = await dbService.deleteUser(usernameToDelete);
       if (success) {
-        refreshLeaderboard(); // Refresh list
+        refreshLeaderboard();
       }
+    }
+  };
+
+  const startEditingUser = (user: User) => {
+    setUserToEdit(user);
+    setAdminEditForm({
+      name: user.name,
+      age: user.age,
+      gender: user.gender,
+      password: user.password,
+      totalPoints: user.totalPoints
+    });
+  };
+
+  const handleAdminSaveUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userToEdit) return;
+    
+    const success = await dbService.updateUser(userToEdit.username, {
+      name: adminEditForm.name,
+      age: adminEditForm.age,
+      gender: adminEditForm.gender,
+      password: adminEditForm.password,
+      totalPoints: Number(adminEditForm.totalPoints)
+    });
+
+    if (success) {
+      await refreshLeaderboard();
+      setUserToEdit(null); // Close modal
+    } else {
+      alert("Yadda saxlanılmadı, xəta oldu.");
     }
   };
 
@@ -357,7 +407,7 @@ const App: React.FC = () => {
   };
 
   // --- GAME LOGIC ---
-
+  
   useEffect(() => {
     if (gameStatus === GameStatus.PLAYING && answerState === AnswerState.IDLE && !isTimerPaused) {
       timerIntervalRef.current = window.setInterval(() => {
@@ -443,7 +493,6 @@ const App: React.FC = () => {
     }, 1500);
   }, [answerState, currentQuestionIndex, questions, selectedTopic, currentUser]);
 
-  // Lifelines
   const useFiftyFifty = () => {
     if (!lifelines.fiftyFifty) return;
     const correct = questions[currentQuestionIndex].correctAnswerIndex;
@@ -487,34 +536,87 @@ const App: React.FC = () => {
   const bgClass = "bg-[#020220]"; 
   const cardClass = "bg-slate-900/80 border-blue-500/50 text-white";
   const inputClass = "bg-slate-800 border-slate-600 text-white";
-  const textClass = "text-slate-300";
+
+  // --- RENDER HELP MODAL ---
+  const renderHelpModal = () => (
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
+      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030] relative`}>
+        <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
+        <div className="flex items-center gap-2 mb-4 text-teal-400">
+           <HelpCircle size={28} />
+           <h2 className="text-xl font-bold">Oyun Qaydaları</h2>
+        </div>
+        <div className="space-y-3 text-slate-300 text-sm md:text-base">
+           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Oyuna başlamaq üçün qeydiyyatdan keçin.</span></p>
+           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər mövzuda <strong>10 sual</strong> var. Sona çatmaq üçün hamısını tapmalısınız.</span></p>
+           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər sual üçün <strong>30 saniyə</strong> vaxtınız var.</span></p>
+           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>3 Köməkçi vasitə: <strong>50/50</strong>, <strong>Auditoriya</strong> və <strong>Bilgə İnsan (AI)</strong>.</span></p>
+           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Məqsəd ən yüksək xalı toplayıb reytinq cədvəlinə düşməkdir!</span></p>
+        </div>
+        <Button onClick={() => setShowHelp(false)} fullWidth className="mt-6 bg-teal-700 hover:bg-teal-600 border-teal-500">Aydındır</Button>
+      </div>
+    </div>
+  );
 
   // --- RENDER SCREENS ---
 
   const renderAuthChoice = () => {
     const isLoggedIn = !!currentUser;
+    const isAdmin = currentUser?.username === 'admin';
     const btnBase = "py-3 md:py-4 text-sm md:text-base font-bold border-2 flex items-center justify-center gap-3 transition-all duration-300 hover:scale-[1.02] active:scale-95 shadow-lg rounded-xl";
+
+    // Stats calculation
+    const highestScore = allUsers.length > 0 ? Math.max(...allUsers.map(u => u.totalPoints)) : 0;
+    const playerCount = allUsers.length;
 
     return (
       <div className="flex flex-col h-full w-full relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
         <div className="flex flex-col min-h-full w-full justify-between">
-            {/* Top Section */}
-            <div className="flex flex-col items-center justify-center pt-24 shrink-0 relative z-20 px-4">
-               <div className="scale-90 md:scale-100">
-                 <GameLogo size="xl" />
-               </div>
-               <div className="mt-8 md:mt-12 text-center z-30 px-4">
-                 <p className="text-blue-100 text-sm md:text-lg font-semibold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                   Biliyinizi sınayın,
-                 </p>
-                 <p className="text-yellow-400 text-lg md:text-2xl font-bold italic tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)] mt-2">
-                   Bilməcə Live oynayın!
-                 </p>
-               </div>
+            
+            {/* Top Section Group */}
+            <div className="flex flex-col items-center w-full">
+                {/* Logo and Slogan */}
+                <div className="flex flex-col items-center justify-center pt-16 md:pt-24 shrink-0 relative z-20 px-4">
+                   <div className="scale-105 md:scale-110">
+                     <GameLogo size="xl" />
+                   </div>
+                   <div className="mt-8 md:mt-12 text-center z-30 px-4">
+                     <p className="text-blue-100 text-sm md:text-base font-semibold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                       Bilgi gücdür,
+                     </p>
+                     <p className="text-yellow-400 text-lg md:text-xl font-bold italic tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">
+                       Bilməcə Live isə meydan!
+                     </p>
+                   </div>
+                </div>
+
+                {/* Top Section - Real-time Stats */}
+                <div className="flex justify-between items-center px-6 w-full max-w-sm mx-auto gap-4 mt-2">
+                   <div className="flex-1 flex flex-col justify-center px-3 py-2 bg-[#000030]/80 border border-blue-600 rounded-xl shadow-[0_0_10px_rgba(37,99,235,0.3)] min-h-[50px] relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
+                      <div className="flex items-center gap-2 relative z-10">
+                        <Trophy size={16} className="text-yellow-400 shrink-0" />
+                        <div className="flex flex-col">
+                           <span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">Rekord Xal</span>
+                           <span className="text-sm font-bold text-white leading-none font-mono">{highestScore.toLocaleString()}</span>
+                        </div>
+                      </div>
+                   </div>
+                   <div className="flex-1 flex flex-col justify-center px-3 py-2 bg-[#000030]/80 border border-blue-600 rounded-xl shadow-[0_0_10px_rgba(37,99,235,0.3)] min-h-[50px] relative overflow-hidden group">
+                      <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
+                      <div className="flex items-center gap-2 relative z-10">
+                        <Users size={16} className="text-blue-400 shrink-0" />
+                         <div className="flex flex-col">
+                           <span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">Oyunçu Sayı</span>
+                           <span className="text-sm font-bold text-white leading-none font-mono">{playerCount.toLocaleString()}</span>
+                        </div>
+                      </div>
+                   </div>
+                </div>
             </div>
 
-            {/* Middle Section */}
-            <div className="flex-1 flex flex-col items-center justify-center w-full px-4 py-4 min-h-[100px]">
+            {/* Middle Section - Welcome */}
+            <div className="flex-1 flex flex-col items-center justify-center w-full px-4 py-2 min-h-[60px]">
                {isLoggedIn && (
                   <div className="text-center animate-fade-in bg-[#000040]/50 p-4 rounded-2xl border border-blue-500/20 backdrop-blur-sm shadow-xl w-full max-w-xs mx-auto">
                      <p className={`text-[10px] text-blue-300 mb-2 uppercase tracking-[0.2em] font-bold`}>Xoş gəldin</p>
@@ -528,7 +630,8 @@ const App: React.FC = () => {
             </div>
 
             {/* Bottom Section */}
-            <div className="w-full p-6 pb-8 md:pb-12 flex flex-col gap-3 max-w-xs mx-auto z-20 shrink-0">
+            <div className="w-full px-6 pb-4 md:pb-6 flex flex-col items-center shrink-0 max-w-xs mx-auto z-20">
+               <div className="w-full flex flex-col gap-3">
                {!isLoggedIn ? (
                  <>
                    <Button 
@@ -547,6 +650,13 @@ const App: React.FC = () => {
                    </Button>
                    <Button 
                       fullWidth 
+                      onClick={() => setShowHelp(true)} 
+                      className={`${btnBase} bg-teal-900/80 border-teal-500 text-white shadow-[0_0_15px_rgba(20,184,166,0.4)] hover:shadow-[0_0_25px_rgba(20,184,166,0.6)] hover:bg-teal-800`}
+                   >
+                     <HelpCircle size={20} /> Kömək
+                   </Button>
+                   <Button 
+                      fullWidth 
                       onClick={() => setGameStatus(GameStatus.LEADERBOARD)} 
                       className={`${btnBase} bg-amber-900/80 border-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.4)] hover:shadow-[0_0_25px_rgba(245,158,11,0.6)] hover:bg-amber-800`}
                    >
@@ -562,6 +672,15 @@ const App: React.FC = () => {
                    >
                       <Play size={22} fill="currentColor" /> Oyuna Başla
                    </Button>
+                   {isAdmin && (
+                    <Button 
+                      fullWidth 
+                      onClick={() => setGameStatus(GameStatus.ADMIN_DASHBOARD)} 
+                      className={`${btnBase} bg-gray-800/80 border-gray-500 text-white shadow-[0_0_15px_rgba(107,114,128,0.4)] hover:bg-gray-700`}
+                    >
+                      <Wrench size={20} /> Admin Panel
+                    </Button>
+                   )}
                     <Button 
                       fullWidth 
                       onClick={() => setGameStatus(GameStatus.LEADERBOARD)} 
@@ -578,116 +697,93 @@ const App: React.FC = () => {
                    </Button>
                  </>
                )}
+               </div>
+               <div className="text-[10px] text-white mt-4 font-mono">
+                  © 2025 by Aqil Muradov | Gemini 3
+               </div>
             </div>
         </div>
+        {showHelp && renderHelpModal()}
       </div>
     );
   };
 
   const renderLeaderboard = () => {
-    const sortedUsers = [...allUsers].sort((a, b) => b.totalPoints - a.totalPoints).slice(0, 20);
-    const isAdmin = currentUser?.username === 'admin';
+    const sortedUsers = [...allUsers].sort((a, b) => b.totalPoints - a.totalPoints);
 
     return (
-      <div className="flex flex-col items-center justify-center h-full p-4 w-full max-w-md mx-auto overflow-y-auto z-10">
-        <div className={`${cardClass} p-6 rounded-2xl border w-full shadow-2xl my-auto bg-[#000030]/90 backdrop-blur-md`}>
-          <div className="flex items-center justify-center gap-2 mb-6 text-yellow-400">
-            <Trophy size={32} />
-            <h2 className="text-2xl font-bold">Reytinq Cədvəli</h2>
-          </div>
-          
-          <div className="space-y-2 mb-6 max-h-[60vh] overflow-y-auto">
-            {sortedUsers.length === 0 ? (
-              <p className="text-center text-slate-400 italic">Yüklənir və ya hələ heç kim oynamayıb.</p>
-            ) : (
-              sortedUsers.map((u, idx) => (
-                <div key={u.username} className="flex justify-between items-center p-3 bg-slate-800/50 rounded-lg border border-slate-700">
-                   <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm ${idx === 0 ? 'bg-yellow-500 text-black' : idx === 1 ? 'bg-gray-400 text-black' : idx === 2 ? 'bg-orange-600 text-white' : 'bg-slate-700 text-slate-300'}`}>
-                        {idx + 1}
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="font-bold text-white text-sm">{u.name}</span>
-                        <span className="text-[10px] text-slate-400">{u.username}</span>
-                      </div>
-                   </div>
-                   <div className="flex items-center gap-3">
-                      <div className="font-mono font-bold text-green-400 text-sm">{u.totalPoints}</div>
-                      {isAdmin && (
-                        <button onClick={() => handleDeleteUser(u.username)} className="text-red-500 hover:text-red-400">
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                   </div>
-                </div>
-              ))
-            )}
-          </div>
-          
-          <Button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-2" fullWidth variant="secondary">Geri qayıt</Button>
+      <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
+        <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+           <div className="flex items-center gap-3">
+             <Trophy size={32} className="text-yellow-500" />
+             <h2 className="text-xl font-bold text-white">Liderlər Cədvəli</h2>
+           </div>
+           <Button variant="secondary" onClick={() => setGameStatus(previousStatus || GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800">
+             <ArrowLeft size={18} />
+           </Button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+          {sortedUsers.map((user, index) => (
+            <div key={user.username} className={`flex items-center justify-between p-4 rounded-lg border ${user.username === currentUser?.username ? 'bg-blue-900/40 border-blue-500' : 'bg-slate-800/80 border-slate-600'}`}>
+               <div className="flex items-center gap-4">
+                  <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${index < 3 ? 'bg-yellow-500 text-black' : 'bg-slate-700 text-slate-300'}`}>
+                    {index + 1}
+                  </span>
+                  <div>
+                    <div className="font-bold text-white text-lg">{user.name}</div>
+                    <div className="text-xs text-slate-400">Oyunlar: {user.gamesPlayed}</div>
+                  </div>
+               </div>
+               <div className="text-green-400 font-mono font-bold text-xl">{user.totalPoints.toLocaleString()}</div>
+            </div>
+          ))}
+          {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10">Hələ ki heç kim oynamayıb.</div>}
         </div>
       </div>
     );
   };
 
-  // Re-used renderProfile, renderLogin, renderRegister, renderTopicSelection, renderPlaying, renderGameOver from previous version
-  // but just updated to use async calls implicitly via the updated handler functions above.
-  // ... (Full render functions preserved for brevity, logic updated in handlers) ...
-
-  const renderProfile = () => (
-    <div className="flex flex-col items-center justify-center h-full p-6 w-full max-w-sm mx-auto overflow-y-auto z-10">
-      <div className={`${cardClass} p-6 rounded-2xl border w-full shadow-2xl bg-[#000030]/90 backdrop-blur-md`}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-blue-300">Profil</h2>
-          {profileSaveStatus === 'saved' && <span className="text-green-400 text-xs font-bold animate-pulse">Yadda saxlanıldı!</span>}
-        </div>
-        
-        <form onSubmit={handleProfileUpdate} className="space-y-4">
-          <div>
-            <label className="text-xs text-slate-400 block mb-1">İstifadəçi adı</label>
-            <div className="w-full p-3 rounded-lg border bg-slate-800/50 border-slate-700 text-slate-400 cursor-not-allowed">
-              {currentUser?.username}
-            </div>
-          </div>
-          <div>
-             <label className="text-xs text-blue-300 block mb-1">Ad</label>
-             <input type="text" value={editProfileForm.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass}`} />
-          </div>
-          <div className="flex gap-3">
-             <div className="flex-1">
-                <label className="text-xs text-blue-300 block mb-1">Yaşınız</label>
-                <input type="number" value={editProfileForm.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass}`} />
-             </div>
-             <div className="flex-1">
-                <label className="text-xs text-blue-300 block mb-1">Cins</label>
-                <select value={editProfileForm.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className={`w-full p-3 rounded-lg border ${inputClass}`}>
-                  <option value="">Seçin</option>
-                  <option value="Kişi">Kişi</option>
-                  <option value="Qadın">Qadın</option>
-                </select>
-             </div>
-          </div>
-          <Button type="submit" fullWidth className="py-2 bg-green-700">Yadda saxla</Button>
-        </form>
-        <Button variant="secondary" fullWidth onClick={closeProfile} className="mt-3 py-2 bg-transparent border border-slate-600">Geri qayıt</Button>
-      </div>
-    </div>
-  );
-
   const renderLogin = () => (
-    <div className="flex flex-col items-center justify-center h-full p-6 w-full max-w-sm mx-auto overflow-y-auto z-10">
-      <div className="w-full my-auto flex flex-col items-center">
-        <div className="mb-6 p-4 bg-blue-900/30 rounded-full border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.3)]"><LogIn size={40} className="text-blue-400 shrink-0" /></div>
-        <div className={`${cardClass} p-6 rounded-2xl border w-full shadow-2xl bg-[#000030]/90 backdrop-blur-md`}>
-          <h2 className="text-xl font-bold mb-4 text-center text-blue-300">Giriş et</h2>
-          {authError && <div className="bg-red-900/50 border border-red-800 text-red-200 p-2 rounded mb-4 text-xs text-center">{authError}</div>}
-          <form onSubmit={handleLogin} className="space-y-3">
-            <input type="text" placeholder="İstifadəçi adı" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass}`} />
-            <input type="password" placeholder="Şifrə" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass}`} />
-            <Button type="submit" fullWidth disabled={isAuthLoading} className="py-2 mt-2 bg-blue-700">{isAuthLoading ? 'Gözləyin...' : 'Daxil ol'}</Button>
-          </form>
-          <Button variant="secondary" fullWidth onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="mt-3 py-2 bg-transparent border border-slate-600">Geri qayıt</Button>
-        </div>
+    <div className="flex flex-col h-full items-center justify-center p-4 z-10 w-full max-w-md mx-auto">
+      <div className={`${cardClass} p-8 rounded-2xl w-full shadow-2xl bg-[#000030]`}>
+        <h2 className="text-2xl font-bold mb-6 text-center text-blue-400 uppercase tracking-widest">Daxil Ol</h2>
+        <form onSubmit={handleLogin} className="space-y-4">
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">İstifadəçi adı</label>
+            <input 
+              type="text" 
+              required 
+              className={`w-full p-3 rounded-lg border ${inputClass} focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none`}
+              value={authForm.username}
+              onChange={e => setAuthForm({...authForm, username: e.target.value})}
+            />
+          </div>
+          <div>
+            <label className="block text-sm text-slate-400 mb-1">Şifrə</label>
+            <input 
+              type="password" 
+              required 
+              className={`w-full p-3 rounded-lg border ${inputClass} focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none`}
+              value={authForm.password}
+              onChange={e => setAuthForm({...authForm, password: e.target.value})}
+            />
+          </div>
+          
+          {authError && (
+            <div className="bg-red-900/30 border border-red-500/50 text-red-200 p-3 rounded-lg text-sm flex items-center gap-2">
+              <AlertCircle size={16} /> {authError}
+            </div>
+          )}
+
+          <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4">
+            {isAuthLoading ? 'Yoxlanılır...' : 'Daxil Ol'}
+          </Button>
+          
+          <div className="mt-4 text-center">
+             <button type="button" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button>
+          </div>
+        </form>
       </div>
     </div>
   );
@@ -695,164 +791,528 @@ const App: React.FC = () => {
   const renderRegister = () => {
     if (registrationSuccess) {
        return (
-         <div className="flex flex-col items-center justify-center h-full p-6 w-full max-w-sm mx-auto text-center overflow-y-auto z-10">
-            <div className={`${cardClass} p-6 rounded-2xl border w-full flex flex-col items-center shadow-2xl my-auto bg-[#000030]/90 backdrop-blur-md`}>
-               <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mb-4 animate-bounce"><CheckCircle size={32} className="text-white" /></div>
-               <h2 className="text-xl font-bold mb-2 text-green-400">Uğurlu qeydiyyat!</h2>
-               <Button onClick={finishRegistration} fullWidth className="bg-green-700">Davam et</Button>
+        <div className="flex flex-col h-full items-center justify-center p-4 z-10">
+          <div className={`${cardClass} p-8 rounded-2xl w-full max-w-md shadow-2xl text-center bg-[#000030]`}>
+            <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Check size={32} className="text-white" />
             </div>
-         </div>
+            <h2 className="text-2xl font-bold text-white mb-2">Qeydiyyat Uğurlu!</h2>
+            <p className="text-slate-300 mb-6">İndi oyun oynaya bilərsiniz.</p>
+            <Button onClick={finishRegistration} fullWidth>Davam et</Button>
+          </div>
+        </div>
        );
     }
+
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 w-full max-w-sm mx-auto overflow-y-auto z-10">
-        <div className="w-full my-auto flex flex-col items-center">
-           <div className="mb-6 p-4 bg-blue-900/30 rounded-full border border-blue-500/30 shadow-[0_0_20px_rgba(59,130,246,0.3)]"><UserPlus size={40} className="text-blue-400 shrink-0" /></div>
-          <div className={`${cardClass} p-6 rounded-2xl border w-full shadow-2xl bg-[#000030]/90 backdrop-blur-md`}>
-            <h2 className="text-xl font-bold mb-4 text-center text-blue-300">Qeydiyyat</h2>
-            {authError && <div className="bg-red-900/50 border border-red-800 text-red-200 p-2 rounded mb-4 text-xs text-center">{authError}</div>}
-            <form onSubmit={handleRegister} className="space-y-3">
+      <div className="flex flex-col h-full items-center justify-center p-4 z-10 w-full max-w-md mx-auto">
+        <div className={`${cardClass} p-6 md:p-8 rounded-2xl w-full shadow-2xl bg-[#000030] overflow-y-auto max-h-[90vh]`}>
+          <h2 className="text-xl md:text-2xl font-bold mb-4 text-center text-fuchsia-400 uppercase tracking-widest">Qeydiyyat</h2>
+          <form onSubmit={handleRegister} className="space-y-3">
+            <div>
+              <label className="block text-xs md:text-sm text-slate-400 mb-1">İstifadəçi adı (min 3 simvol)</label>
               <div className="relative">
-                <input type="text" placeholder="İstifadəçi adı (min. 3 simvol)" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass} pr-8`} />
-                <div className="absolute right-3 top-3">{authForm.username.length >= 3 && (usernameStatus === 'valid' ? <Check className="text-green-500" size={16} /> : usernameStatus === 'taken' ? <X className="text-red-500" size={16} /> : null)}</div>
+                <input 
+                  type="text" 
+                  required 
+                  minLength={3}
+                  className={`w-full p-2.5 rounded-lg border ${inputClass} ${usernameStatus === 'valid' ? 'border-green-500' : usernameStatus === 'taken' ? 'border-red-500' : ''} outline-none`}
+                  value={authForm.username}
+                  onChange={e => setAuthForm({...authForm, username: e.target.value.toLowerCase().replace(/\s/g, '')})}
+                />
+                <div className="absolute right-3 top-3">
+                  {usernameStatus === 'checking' && <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>}
+                  {usernameStatus === 'valid' && <Check size={16} className="text-green-500" />}
+                  {usernameStatus === 'taken' && <X size={16} className="text-red-500" />}
+                </div>
               </div>
-              {/* Validation message */}
-              <div className="relative">
-                 <input type="password" placeholder="Şifrə (5-10 simvol)" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass} pr-8`} />
-                 <div className="absolute right-3 top-3">{authForm.password.length > 0 && (passwordStatus === 'valid' ? <Check className="text-green-500" size={16} /> : passwordStatus === 'invalid' ? <X className="text-red-500" size={16} /> : null)}</div>
+              {usernameStatus === 'taken' && <p className="text-xs text-red-400 mt-1">Bu ad artıq tutulub.</p>}
+            </div>
+
+            <div>
+              <label className="block text-xs md:text-sm text-slate-400 mb-1">Şifrə (5-10 simvol)</label>
+              <input 
+                type="text" 
+                required 
+                minLength={5}
+                maxLength={10}
+                className={`w-full p-2.5 rounded-lg border ${inputClass} ${passwordStatus === 'valid' ? 'border-green-500' : passwordStatus === 'invalid' && authForm.password.length > 0 ? 'border-red-500' : ''} outline-none`}
+                value={authForm.password}
+                onChange={e => setAuthForm({...authForm, password: e.target.value})}
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs md:text-sm text-slate-400 mb-1">Adınız</label>
+              <input 
+                type="text" 
+                required 
+                className={`w-full p-2.5 rounded-lg border ${inputClass} outline-none`}
+                value={authForm.name}
+                onChange={e => setAuthForm({...authForm, name: e.target.value})}
+              />
+            </div>
+
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-xs md:text-sm text-slate-400 mb-1">Yaş</label>
+                <input 
+                  type="number" 
+                  required 
+                  className={`w-full p-2.5 rounded-lg border ${inputClass} outline-none`}
+                  value={authForm.age}
+                  onChange={e => setAuthForm({...authForm, age: e.target.value})}
+                />
               </div>
-               <input type="text" placeholder="Ad" value={authForm.name} onChange={e => setAuthForm({...authForm, name: e.target.value})} className={`w-full p-3 rounded-lg border ${inputClass}`} />
-              <div className="flex gap-2">
-                 <input type="number" placeholder="Yaşınız" value={authForm.age} onChange={e => setAuthForm({...authForm, age: e.target.value})} className={`w-1/2 p-3 rounded-lg border ${inputClass}`} />
-                 <select value={authForm.gender} onChange={e => setAuthForm({...authForm, gender: e.target.value as any})} className={`w-1/2 p-3 rounded-lg border ${inputClass}`}>
-                    <option value="">Cins</option>
-                    <option value="Kişi">Kişi</option>
-                    <option value="Qadın">Qadın</option>
-                 </select>
+              <div className="flex-1">
+                <label className="block text-xs md:text-sm text-slate-400 mb-1">Cins</label>
+                <select 
+                  required
+                  className={`w-full p-2.5 rounded-lg border ${inputClass} outline-none`}
+                  value={authForm.gender}
+                  onChange={e => setAuthForm({...authForm, gender: e.target.value as any})}
+                >
+                  <option value="" disabled>Seçin</option>
+                  <option value="Kişi">Kişi</option>
+                  <option value="Qadın">Qadın</option>
+                </select>
               </div>
-              <Button type="submit" fullWidth disabled={usernameStatus === 'taken' || passwordStatus === 'invalid' || isAuthLoading} className="py-2 mt-2 bg-blue-700">{isAuthLoading ? 'Gözləyin...' : 'Qeydiyyatdan keç'}</Button>
-            </form>
-            <Button variant="secondary" fullWidth onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="mt-3 py-2 bg-transparent border border-slate-600">Geri qayıt</Button>
-          </div>
+            </div>
+            
+            {authError && (
+              <div className="bg-red-900/30 border border-red-500/50 text-red-200 p-2.5 rounded-lg text-sm flex items-center gap-2">
+                <AlertCircle size={16} /> {authError}
+              </div>
+            )}
+
+            <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-2">
+              {isAuthLoading ? 'Qeydiyyat...' : 'Qeydiyyatdan keç'}
+            </Button>
+            
+            <div className="mt-2 text-center">
+               <button type="button" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Ləğv et</button>
+            </div>
+          </form>
         </div>
       </div>
     );
   };
 
   const renderTopicSelection = () => (
-    <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 overflow-hidden z-10">
-      <header className="flex justify-between items-center mb-2 shrink-0">
-         <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-800/80 rounded-full flex items-center justify-center text-white font-bold text-base shadow-[0_0_15px_rgba(59,130,246,0.5)] border-2 border-blue-400">{currentUser?.name.charAt(0)}</div>
-            <div>
-               <div className="font-bold text-sm text-white drop-shadow-md">{currentUser?.name}</div>
-               <div className={`text-[10px] text-blue-300 uppercase tracking-wide`}>Ümumi xal: <span className="text-yellow-400 font-bold">{currentUser?.totalPoints}</span></div>
-            </div>
-         </div>
-         <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-[10px] h-8 border-slate-600 bg-slate-800/50">Geri qayıt</Button>
-      </header>
-      <div className="flex flex-col items-center justify-center mb-2 shrink-0">
-         <GameLogo size="large" />
-         <h2 className="text-lg font-bold text-center mt-2 drop-shadow-[0_0_10px_rgba(255,255,255,0.4)] shrink-0 text-white">Mövzu seçimi</h2>
+    <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
+      <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+         <h2 className="text-xl md:text-2xl font-bold text-white">Mövzu Seçimi</h2>
+         <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800">
+           <ArrowLeft size={18} /> <span className="hidden md:inline ml-2">Geri</span>
+         </Button>
       </div>
-      <div className="flex-1 overflow-y-auto min-h-0 w-full pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-           {TOPICS.map(topic => {
-              const Icon = ICON_MAP[topic.icon] || HelpCircle;
-              const isLocked = currentUser?.completedTopics.includes(topic.id);
-              const colorMap: Record<string, string> = { cyan: "border-cyan-500/50 shadow-cyan-500/20", amber: "border-amber-500/50 shadow-amber-500/20", fuchsia: "border-fuchsia-500/50 shadow-fuchsia-500/20", emerald: "border-emerald-500/50 shadow-emerald-500/20", violet: "border-violet-500/50 shadow-violet-500/20", rose: "border-rose-500/50 shadow-rose-500/20" };
-              const iconColorMap: Record<string, string> = { cyan: "text-cyan-400 bg-cyan-500/20", amber: "text-amber-400 bg-amber-500/20", fuchsia: "text-fuchsia-400 bg-fuchsia-500/20", emerald: "text-emerald-400 bg-emerald-500/20", violet: "text-violet-400 bg-violet-500/20", rose: "text-rose-400 bg-rose-500/20" };
-              return (
-                 <button key={topic.id} onClick={() => !isLocked && startGameWithTopic(topic.id)} disabled={isLocked} className={`${cardClass} p-3 rounded-xl flex items-center gap-3 transition-all hover:scale-[1.01] relative overflow-hidden group text-left bg-[#000040]/60 backdrop-blur-sm ${colorMap[topic.color] || colorMap['cyan']}`}>
-                    <div className={`p-2.5 rounded-full shrink-0 transition-colors ${isLocked ? 'bg-gray-700' : (iconColorMap[topic.color] || iconColorMap['cyan'])}`}><Icon size={24} /></div>
-                    <div className="flex-1 min-w-0">
-                       <h3 className="font-bold text-lg leading-tight text-white group-hover:text-white transition-colors truncate">{topic.label}</h3>
-                       <p className={`text-[10px] text-gray-400 leading-tight truncate`}>{topic.description}</p>
-                    </div>
-                    {isLocked && <div className="absolute inset-0 bg-black/80 flex items-center justify-center text-green-400 font-bold text-sm tracking-widest backdrop-blur-sm border border-green-500/50 rounded-xl">TAMAMLANDI</div>}
-                 </button>
-              )
-           })}
-        </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto pb-4">
+         {TOPICS.map((topic) => {
+           const Icon = ICON_MAP[topic.icon] || HelpCircle;
+           const isCompleted = currentUser?.completedTopics.includes(topic.id);
+           
+           return (
+             <button
+               key={topic.id}
+               onClick={() => startGameWithTopic(topic.id)}
+               disabled={isCompleted}
+               className={`
+                 relative overflow-hidden group p-6 rounded-xl border-2 transition-all duration-300 flex flex-col items-center justify-center gap-4 text-center h-48
+                 ${isCompleted 
+                   ? 'bg-slate-900/50 border-slate-800 opacity-60 cursor-not-allowed grayscale' 
+                   : `bg-slate-800/80 border-slate-600 hover:border-${topic.color}-500 hover:bg-slate-800 hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.1)]`
+                 }
+               `}
+             >
+               <div className={`
+                 w-16 h-16 rounded-full flex items-center justify-center mb-2 transition-colors duration-300
+                 ${isCompleted ? 'bg-slate-800 text-slate-500' : `bg-slate-700 text-${topic.color}-400 group-hover:bg-${topic.color}-500 group-hover:text-white`}
+               `}>
+                 {isCompleted ? <CheckCircle size={32} /> : <Icon size={32} />}
+               </div>
+               
+               <div>
+                 <h3 className={`text-xl font-bold mb-1 ${isCompleted ? 'text-slate-500' : 'text-white'}`}>{topic.label}</h3>
+                 <p className="text-xs text-slate-400 line-clamp-2">{topic.description}</p>
+               </div>
+
+               {isCompleted && (
+                 <div className="absolute top-3 right-3 text-green-500 bg-green-900/20 p-1 rounded-full">
+                   <Check size={16} />
+                 </div>
+               )}
+             </button>
+           );
+         })}
       </div>
     </div>
   );
 
   const renderPlaying = () => {
+    if (!questions.length || !questions[currentQuestionIndex]) return <div>Yüklənir...</div>;
+
     const currentQ = questions[currentQuestionIndex];
-    if (!currentQ) return <div>Loading...</div>;
+    const moneyTreeLevel = currentQuestionIndex;
+
     return (
-      <div className="flex flex-col h-full max-w-5xl mx-auto p-3 relative overflow-hidden z-10">
-        <header className="relative flex justify-between items-center mb-4 shrink-0 z-20 h-16 w-full px-2">
-           <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-900/20 border border-red-500/30 text-red-300 hover:bg-red-900/40 transition-colors"><ArrowLeft size={18} /><span className="text-sm font-bold">Geri</span></button>
-           <div className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-14 h-14 flex items-center justify-center rounded-full border-[3px] ${timeLeft <= 10 ? 'border-red-500 animate-pulse bg-red-900/20' : 'border-yellow-500 bg-[#000040]'} shadow-[0_0_20px_rgba(234,179,8,0.4)] z-30`}><span className={`text-xl font-bold ${timeLeft <= 10 ? 'text-red-500' : 'text-yellow-400'}`}>{timeLeft}</span></div>
-           <button onClick={openProfile} className="w-14 h-14 bg-blue-800 rounded-full flex items-center justify-center font-bold text-xl border-2 border-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.6)] text-white hover:scale-105 transition-transform">{currentUser?.name.charAt(0)}</button>
-        </header>
-        <div className="flex-1 flex flex-col items-center justify-center relative z-10 overflow-y-auto min-h-0 w-full [&::-webkit-scrollbar]:hidden [-ms-overflow-style:'none'] [scrollbar-width:'none']">
-           <div className="w-full flex flex-col items-center my-auto">
-             <div className={`${cardClass} p-6 rounded-2xl border-2 border-blue-400/50 text-center w-full max-w-3xl mb-6 backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)] shrink-0 bg-gradient-to-b from-slate-900/90 to-[#000040]/90`}>
-                <h2 className="text-lg md:text-2xl font-medium leading-snug text-white">{currentQ.text}</h2>
-             </div>
-             <div className="flex justify-between items-center w-full max-w-3xl mb-6 px-2 md:px-4 shrink-0">
-                <div className="flex gap-2 md:gap-4">
-                    <button onClick={useFiftyFifty} disabled={!lifelines.fiftyFifty} className={`w-12 h-12 md:w-14 md:h-14 rounded-full border-2 transition-all flex items-center justify-center ${!lifelines.fiftyFifty ? 'opacity-30 grayscale border-gray-600 bg-gray-800' : 'border-blue-400 hover:scale-110 hover:shadow-[0_0_15px_rgba(59,130,246,0.6)] bg-blue-900'}`} title="50/50"><span className="font-bold text-blue-300 text-xs md:text-sm">50:50</span></button>
-                    <button onClick={useAskAudience} disabled={!lifelines.askAudience} className={`w-12 h-12 md:w-14 md:h-14 rounded-full border-2 transition-all flex items-center justify-center ${!lifelines.askAudience ? 'opacity-30 grayscale border-gray-600 bg-gray-800' : 'border-green-400 hover:scale-110 hover:shadow-[0_0_15px_rgba(34,197,94,0.6)] bg-green-900'}`} title="Auditoriya"><Users size={20} className="text-green-300" /></button>
-                    <button onClick={useAskAI} disabled={!lifelines.askAI} className={`w-12 h-12 md:w-14 md:h-14 rounded-full border-2 transition-all flex items-center justify-center ${!lifelines.askAI ? 'opacity-30 grayscale border-gray-600 bg-gray-800' : 'border-purple-400 hover:scale-110 hover:shadow-[0_0_15px_rgba(168,85,247,0.6)] bg-purple-900'}`} title="Bilgə İnsan (AI)"><BrainCircuit size={20} className="text-purple-300" /></button>
-                </div>
-                <div className="flex flex-col items-end text-right">
-                   <div className="flex items-center gap-2 text-yellow-400 font-bold text-sm md:text-base bg-yellow-500/10 px-3 py-1 rounded-lg border border-yellow-500/30 mb-1"><Hash size={16} /><span>Sual: {currentQuestionIndex + 1} / {questions.length}</span></div>
-                   <div className="flex items-center gap-2 text-green-400 font-bold text-sm md:text-base bg-green-500/10 px-3 py-1 rounded-lg border border-green-500/30"><Star size={16} /><span>Xal: {(currentQuestionIndex) * 100}</span></div>
-                </div>
-             </div>
-             {aiHint && (<div className="mb-4 p-4 bg-purple-900/90 border border-purple-500 rounded-xl max-w-2xl animate-fade-in flex gap-3 items-start shadow-[0_0_20px_rgba(168,85,247,0.3)] shrink-0 backdrop-blur-sm w-full"><BrainCircuit className="shrink-0 text-purple-300 mt-1" size={20} /><p className="text-sm text-purple-100 italic">"{aiHint}"</p></div>)}
-             {audienceData && (<div className="mb-4 p-3 bg-slate-800/90 rounded-lg flex gap-3 items-end h-24 border border-slate-600 shadow-lg shrink-0 w-full max-w-3xl">{['A','B','C','D'].map(opt => (<div key={opt} className="flex flex-col items-center flex-1 h-full justify-end"><div className="mb-0.5 font-bold text-yellow-500 text-xs">{audienceData[opt as keyof AudienceData]}%</div><div className="w-full bg-blue-600 rounded-t transition-all duration-1000 shadow-[0_0_10px_rgba(37,99,235,0.5)]" style={{ height: `${audienceData[opt as keyof AudienceData]}%` }}></div><div className="mt-0.5 font-bold text-slate-400 text-sm">{opt}</div></div>))}</div>)}
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 w-full max-w-4xl shrink-0 pb-4">
-                {currentQ.options.map((opt, idx) => {
-                   if (hiddenOptions.includes(idx)) { return <div key={idx} className="invisible p-3">Hidden</div>; }
-                   let stateClass = "bg-gradient-to-r from-slate-800 to-slate-900 hover:from-slate-700 hover:to-slate-800 border-slate-600 text-white shadow-md"; 
-                   if (answerState === AnswerState.SELECTED && selectedAnswerIndex === idx) { stateClass = "bg-orange-600 border-orange-400 text-white shadow-[0_0_25px_rgba(249,115,22,0.6)] scale-[1.02] z-10"; } 
-                   else if (answerState === AnswerState.CORRECT && idx === currentQ.correctAnswerIndex) { stateClass = "animate-flash-green bg-green-600 border-green-400 text-white font-bold scale-[1.02] shadow-[0_0_30px_rgba(34,197,94,0.8)] z-10"; } 
-                   else if (answerState === AnswerState.WRONG && idx === selectedAnswerIndex) { stateClass = "bg-red-700 border-red-500 text-white shadow-[0_0_20px_rgba(220,38,38,0.6)]"; } 
-                   else if (answerState === AnswerState.WRONG && idx === currentQ.correctAnswerIndex) { stateClass = "bg-green-600 border-green-400 text-white opacity-80 shadow-[0_0_15px_rgba(34,197,94,0.4)]"; }
-                   return (
-                     <button key={idx} disabled={answerState !== AnswerState.IDLE} onClick={() => handleAnswerSelect(idx)} className={`relative p-4 rounded-xl border text-left transition-all group overflow-hidden ${stateClass}`}>
-                        <div className="absolute left-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-500 rotate-45 opacity-70"></div><div className="absolute right-2 top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-500 rotate-45 opacity-70"></div>
-                        <div className="flex items-center gap-3 relative z-10 pl-3"><span className="font-bold text-yellow-500 text-lg drop-shadow">{['A','B','C','D'][idx]}:</span><span className="text-base font-medium leading-tight tracking-wide">{opt}</span></div>
-                     </button>
-                   );
+      <div className="flex flex-col h-full w-full max-w-6xl mx-auto p-2 md:p-4 z-10">
+        {/* Top Bar */}
+        <div className="flex justify-between items-center mb-4 bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+           <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-400 uppercase tracking-wider">Mövzu:</span>
+              <span className="font-bold text-blue-300">{TOPICS.find(t => t.id === selectedTopic)?.label}</span>
+           </div>
+           
+           <div className={`flex items-center gap-2 px-4 py-1 rounded-full border ${timeLeft <= 10 ? 'bg-red-900/50 border-red-500 text-red-200 animate-pulse' : 'bg-slate-800 border-slate-600 text-white'}`}>
+             <span className="font-mono font-bold text-xl">{timeLeft}</span>
+             <span className="text-xs">san</span>
+           </div>
+
+           <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-xs h-8 border-slate-600 bg-slate-800">
+             Çıxış
+           </Button>
+        </div>
+
+        <div className="flex-1 flex flex-col md:flex-row gap-4 overflow-hidden">
+           {/* Left/Main Side: Question & Options */}
+           <div className="flex-1 flex flex-col justify-center">
+              
+              {/* Image would go here if we implemented it */}
+              
+              {/* Question Card */}
+              <div className="bg-[#000040]/90 border-2 border-blue-500/50 p-6 md:p-8 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] mb-6 text-center relative">
+                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 px-4 py-1 rounded-full text-xs font-bold text-white border border-blue-400 shadow-lg">
+                   Sual {currentQuestionIndex + 1} / 10
+                 </div>
+                 <h2 className="text-lg md:text-2xl font-semibold text-white leading-relaxed">{currentQ.text}</h2>
+              </div>
+
+              {/* Options Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4 w-full">
+                {currentQ.options.map((option, idx) => {
+                  if (hiddenOptions.includes(idx)) {
+                     return <div key={idx} className="invisible h-14 md:h-16"></div>;
+                  }
+
+                  let stateClass = "";
+                  if (answerState === AnswerState.SELECTED && selectedAnswerIndex === idx) stateClass = "bg-yellow-600 border-yellow-400 text-white";
+                  else if (answerState === AnswerState.CORRECT && selectedAnswerIndex === idx) stateClass = "bg-green-600 border-green-400 text-white animate-pulse";
+                  else if (answerState === AnswerState.WRONG && selectedAnswerIndex === idx) stateClass = "bg-red-600 border-red-400 text-white";
+                  else if (answerState === AnswerState.CORRECT && currentQ.correctAnswerIndex === idx) stateClass = "bg-green-600 border-green-400 text-white"; // Show correct one if wrong selected
+                  else stateClass = ""; // Default handled by Button variant='option'
+
+                  // Show audience percentage if active
+                  const percentage = audienceData ? (idx === 0 ? audienceData.A : idx === 1 ? audienceData.B : idx === 2 ? audienceData.C : audienceData.D) : null;
+
+                  return (
+                    <Button 
+                      key={idx} 
+                      variant="option" 
+                      onClick={() => handleAnswerSelect(idx)}
+                      disabled={answerState !== AnswerState.IDLE}
+                      className={`h-auto min-h-[60px] md:min-h-[70px] flex items-center px-4 relative group ${stateClass}`}
+                    >
+                      <span className="text-yellow-500 font-bold mr-3 text-lg">{['A', 'B', 'C', 'D'][idx]}:</span>
+                      <span className="flex-1">{option}</span>
+                      {percentage !== null && (
+                        <div className="absolute right-2 top-1/2 -translate-y-1/2 text-xs font-bold bg-white/20 px-2 py-1 rounded">
+                          {percentage}%
+                        </div>
+                      )}
+                    </Button>
+                  );
                 })}
-             </div>
+              </div>
+
+              {/* Lifelines */}
+              <div className="flex justify-center gap-4 mt-6 md:mt-8">
+                 <button 
+                   onClick={useFiftyFifty} 
+                   disabled={!lifelines.fiftyFifty || answerState !== AnswerState.IDLE}
+                   className={`flex flex-col items-center gap-1 transition-all ${!lifelines.fiftyFifty ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}
+                 >
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-blue-900 border-2 border-blue-400 flex items-center justify-center shadow-lg font-bold text-white text-sm md:text-base">50:50</div>
+                    <span className="text-[10px] text-blue-300 font-bold uppercase">50/50</span>
+                 </button>
+                 <button 
+                   onClick={useAskAudience} 
+                   disabled={!lifelines.askAudience || answerState !== AnswerState.IDLE}
+                   className={`flex flex-col items-center gap-1 transition-all ${!lifelines.askAudience ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}
+                 >
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-blue-900 border-2 border-blue-400 flex items-center justify-center shadow-lg text-white">
+                      <Users size={24} />
+                    </div>
+                    <span className="text-[10px] text-blue-300 font-bold uppercase">Zal</span>
+                 </button>
+                 <button 
+                   onClick={useAskAI} 
+                   disabled={!lifelines.askAI || answerState !== AnswerState.IDLE}
+                   className={`flex flex-col items-center gap-1 transition-all ${!lifelines.askAI ? 'opacity-30 grayscale cursor-not-allowed' : 'hover:scale-110 active:scale-95'}`}
+                 >
+                    <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-fuchsia-900 border-2 border-fuchsia-400 flex items-center justify-center shadow-lg text-white relative">
+                      {aiLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : <BrainCircuit size={24} />}
+                    </div>
+                    <span className="text-[10px] text-fuchsia-300 font-bold uppercase">AI</span>
+                 </button>
+              </div>
+
+              {/* AI Hint Box */}
+              {aiHint && (
+                <div className="mt-4 bg-fuchsia-900/20 border border-fuchsia-500/30 p-4 rounded-lg animate-fade-in flex gap-3 items-start">
+                   <div className="bg-fuchsia-500/20 p-2 rounded-full shrink-0">
+                     <BrainCircuit size={20} className="text-fuchsia-300" />
+                   </div>
+                   <div>
+                     <div className="text-xs text-fuchsia-300 font-bold mb-1 uppercase">Bilgə İnsan deyir:</div>
+                     <p className="text-sm text-fuchsia-100 italic">"{aiHint}"</p>
+                   </div>
+                </div>
+              )}
+           </div>
+
+           {/* Right Side: Money Tree */}
+           <div className="hidden md:flex flex-col justify-center">
+             <MoneyTree currentLevel={moneyTreeLevel} />
            </div>
         </div>
       </div>
     );
   };
 
-  const renderGameOver = (won: boolean) => {
-    const earnedPoints = won ? (questions.length * 100) + 5000 : (currentQuestionIndex * 50);
+  const renderProfile = () => {
+     if (!currentUser) return null;
+
+     return (
+      <div className="flex flex-col h-full items-center justify-center p-4 z-10 w-full max-w-md mx-auto">
+        <div className={`${cardClass} p-6 rounded-2xl w-full shadow-2xl bg-[#000030]`}>
+           <div className="flex justify-between items-center mb-6">
+             <h2 className="text-xl font-bold text-white uppercase tracking-widest">Profil</h2>
+             <button onClick={closeProfile} className="text-slate-400 hover:text-white bg-slate-800 p-2 rounded-full"><X size={20}/></button>
+           </div>
+           
+           <div className="flex items-center gap-4 mb-6 bg-slate-800/50 p-4 rounded-xl border border-slate-700">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white border-2 border-white shadow-lg">
+                 {currentUser.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                 <div className="text-xs text-slate-400 uppercase">İstifadəçi adı</div>
+                 <div className="text-lg font-bold text-blue-300">@{currentUser.username}</div>
+                 <div className="text-xs text-slate-400 mt-1">Ümumi Xal: <span className="text-green-400 font-bold">{currentUser.totalPoints}</span></div>
+              </div>
+           </div>
+
+           <form onSubmit={handleProfileUpdate} className="space-y-4">
+              <div>
+                <label className="block text-xs text-slate-400 mb-1">Adınız</label>
+                <input 
+                  type="text" 
+                  className={`w-full p-2.5 rounded-lg border ${inputClass} outline-none`}
+                  value={editProfileForm.name}
+                  onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})}
+                />
+              </div>
+              <div className="flex gap-3">
+                 <div className="flex-1">
+                    <label className="block text-xs text-slate-400 mb-1">Yaş</label>
+                    <input 
+                      type="number" 
+                      className={`w-full p-2.5 rounded-lg border ${inputClass} outline-none`}
+                      value={editProfileForm.age}
+                      onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})}
+                    />
+                 </div>
+                 <div className="flex-1">
+                    <label className="block text-xs text-slate-400 mb-1">Cins</label>
+                    <select 
+                      className={`w-full p-2.5 rounded-lg border ${inputClass} outline-none`}
+                      value={editProfileForm.gender}
+                      onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})}
+                    >
+                      <option value="Kişi">Kişi</option>
+                      <option value="Qadın">Qadın</option>
+                    </select>
+                 </div>
+              </div>
+              
+              <Button type="submit" fullWidth disabled={profileSaveStatus === 'saved'} className={profileSaveStatus === 'saved' ? 'bg-green-600 border-green-500' : ''}>
+                {profileSaveStatus === 'saved' ? <><Check size={18} className="mr-2 inline" /> Yadda saxlanıldı</> : 'Yadda saxla'}
+              </Button>
+           </form>
+           
+           <div className="mt-6 pt-4 border-t border-slate-700/50">
+              <h3 className="text-sm font-bold text-slate-300 mb-2">Statistika</h3>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                 <div className="bg-slate-800 p-2 rounded text-slate-400">Oyunlar: <span className="text-white font-bold block text-sm">{currentUser.gamesPlayed}</span></div>
+                 <div className="bg-slate-800 p-2 rounded text-slate-400">Tamamlanan: <span className="text-white font-bold block text-sm">{currentUser.completedTopics.length} mövzu</span></div>
+              </div>
+           </div>
+        </div>
+      </div>
+     );
+  };
+
+  const renderGameOver = (isWin: boolean) => {
+    // Prize calculation logic:
+    // If Win: 1,000,000
+    // If Loss:
+    //   If index < 5 (safe haven 1 at 5th q - 1000): 0
+    //   If index < 8 (safe haven 2 at 8th q - 16000): 1000
+    //   Else: 16000
+    // Actually PRIZE_LADDER indices are 0 to 9 (10 qs)
+    // Safe havens are usually Q5 and Q8 in this simplified version logic?
+    // Let's use the prize from previous question as "won" amount roughly or use standard rules.
+    // The requirement says "adjusted to 10 levels".
+    // 100, 200, 300, 500 (Safe 1 - 500?), 1000, 2000, 4000 (Safe 2 - 4000?), 8000, 16000, 1000000
+    
+    // Simplification for the display:
+    let prize = "0 ₼";
+    if (isWin) {
+      prize = "1,000,000 ₼";
+    } else {
+      // Logic for guaranteed sums
+      if (currentQuestionIndex >= 7) prize = "4,000 ₼"; // Passed Q7
+      else if (currentQuestionIndex >= 3) prize = "500 ₼"; // Passed Q3
+      else prize = "0 ₼";
+    }
+
     return (
-      <div className="flex flex-col items-center justify-center h-full p-6 text-center max-w-md mx-auto animate-fade-in overflow-y-auto z-10">
-          <div className="w-full my-auto flex flex-col items-center">
-            <div className={`mb-6 p-6 rounded-full shrink-0 border-4 ${won ? 'bg-yellow-500/20 shadow-[0_0_50px_rgba(234,179,8,0.5)] border-yellow-500' : 'bg-red-500/20 shadow-[0_0_50px_rgba(239,68,68,0.5)] border-red-500'}`}>
-              {won ? <Trophy size={80} className="text-yellow-500" /> : <AlertCircle size={80} className="text-red-500" />}
+      <div className="flex flex-col h-full items-center justify-center p-4 z-10 w-full max-w-md mx-auto text-center">
+         <div className={`${cardClass} p-8 rounded-2xl w-full shadow-[0_0_50px_rgba(0,0,0,0.8)] border-4 ${isWin ? 'border-yellow-500' : 'border-red-900'} bg-[#000030] relative overflow-hidden`}>
+            {isWin && <div className="absolute inset-0 bg-yellow-500/10 animate-pulse"></div>}
+            
+            <div className={`w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 ${isWin ? 'bg-yellow-500 text-black animate-bounce' : 'bg-red-900/50 text-red-500'}`}>
+               {isWin ? <Trophy size={48} /> : <X size={48} />}
             </div>
-            <h2 className="text-4xl font-bold mb-3 shrink-0 text-white drop-shadow-lg">{won ? "TƏBRİKLƏR!" : "OYUN BİTDİ"}</h2>
-            {!won && lossReason === 'timeout' && (<p className="text-lg text-red-300 mb-6 font-semibold shrink-0">Vaxtınız bitdi!</p>)}
-            {!won && lossReason === 'wrong' && (<p className="text-lg text-red-300 mb-6 font-semibold shrink-0">Cavabınız səhvdir.</p>)}
-            {won && <p className="text-xl text-yellow-400 mb-6 font-medium shrink-0 shadow-yellow-500/50">Siz əsl Bilməcə ustasısınız!</p>}
-            <div className={`${cardClass} p-6 rounded-2xl border-2 border-yellow-600/50 w-full mb-8 shrink-0 bg-gradient-to-r from-[#000040] to-[#000060]`}>
-              <div className="text-xs text-blue-300 uppercase mb-2 tracking-widest">Qazanılan Xal</div>
-              <div className="text-4xl font-bold text-green-400 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{earnedPoints}</div>
+
+            <h2 className={`text-3xl font-extrabold mb-2 ${isWin ? 'text-yellow-400' : 'text-red-400'} uppercase tracking-widest`}>
+              {isWin ? "MİLYONÇU!" : "Məğlub Oldunuz"}
+            </h2>
+            
+            {!isWin && lossReason === 'timeout' && <p className="text-red-300 text-sm mb-4">Vaxtınız bitdi!</p>}
+            {!isWin && lossReason === 'wrong' && <p className="text-red-300 text-sm mb-4">Yanlış cavab!</p>}
+
+            <div className="bg-slate-900/80 p-6 rounded-xl border border-slate-700 mb-8 relative z-10">
+               <p className="text-slate-400 text-xs uppercase tracking-wider mb-1">Qazandığınız Məbləğ</p>
+               <p className="text-4xl font-mono font-bold text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.5)]">{prize}</p>
             </div>
-            <div className="space-y-4 w-full shrink-0 pb-6">
-              <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="py-4 text-lg bg-green-700 hover:bg-green-600 border-green-500 shadow-[0_0_20px_rgba(22,163,74,0.4)]">Yeni Oyun</Button>
-              <Button fullWidth variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-4 text-lg bg-slate-800/80 hover:bg-slate-800 border-slate-600">Ana Menyu</Button>
+
+            <div className="space-y-3 relative z-10">
+               <Button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} fullWidth className="bg-blue-600 hover:bg-blue-500 border-blue-400">
+                 Yenidən Oyna
+               </Button>
+               <Button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} fullWidth variant="secondary">
+                 Ana Menyu
+               </Button>
             </div>
-          </div>
+         </div>
       </div>
     );
   };
 
+  const renderAdminDashboard = () => {
+    const filteredUsers = allUsers.filter(u => 
+      u.username.toLowerCase().includes(adminSearch.toLowerCase()) || 
+      u.name.toLowerCase().includes(adminSearch.toLowerCase())
+    );
+
+    return (
+      <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10 overflow-hidden">
+        <header className="flex justify-between items-center mb-4 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+           <div className="flex items-center gap-3">
+             <Wrench size={32} className="text-gray-300" />
+             <h2 className="text-xl font-bold text-white">Admin Panel</h2>
+           </div>
+           <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800">Ana Menyu</Button>
+        </header>
+
+        {/* Search */}
+        <div className="mb-4 relative">
+          <input 
+            type="text" 
+            placeholder="İstifadəçi axtar (ad və ya username)..." 
+            value={adminSearch}
+            onChange={(e) => setAdminSearch(e.target.value)}
+            className={`w-full p-3 pl-10 rounded-lg border ${inputClass}`}
+          />
+          <Search className="absolute left-3 top-3.5 text-slate-400" size={20} />
+        </div>
+
+        {/* Users List */}
+        <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-3">
+          {filteredUsers.map(user => (
+            <div key={user.username} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-800/80 rounded-lg border border-slate-600 gap-4">
+               <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white text-lg">{user.name}</span>
+                    <span className="text-xs text-blue-300 px-2 py-0.5 bg-blue-900/50 rounded-full">{user.username}</span>
+                    {user.gender && <span className="text-xs text-purple-300 px-2 py-0.5 bg-purple-900/50 rounded-full">{user.gender}</span>}
+                  </div>
+                  <div className="text-sm text-slate-400 mt-1">Yaş: {user.age} | Xal: <span className="text-green-400 font-mono font-bold">{user.totalPoints}</span> | Şifrə: <span className="text-red-300 font-mono">{user.password}</span></div>
+               </div>
+               <div className="flex gap-2">
+                 <button 
+                    onClick={() => startEditingUser(user)}
+                    className="p-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 transition-colors flex items-center gap-2 text-sm font-bold"
+                 >
+                    <Edit size={16} /> Düzəlt
+                 </button>
+                 <button 
+                    onClick={() => handleDeleteUser(user.username)}
+                    className="p-2 bg-red-700 text-white rounded-lg hover:bg-red-600 transition-colors flex items-center gap-2 text-sm font-bold"
+                 >
+                    <Trash2 size={16} /> Sil
+                 </button>
+               </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Edit Modal */}
+        {userToEdit && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+             <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030]`}>
+                <h3 className="text-xl font-bold mb-4 text-white">İstifadəçini Redaktə et: {userToEdit.username}</h3>
+                <form onSubmit={handleAdminSaveUser} className="space-y-3">
+                   <div>
+                      <label className="text-xs text-blue-300 block mb-1">Ad</label>
+                      <input type="text" value={adminEditForm.name} onChange={e => setAdminEditForm({...adminEditForm, name: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} />
+                   </div>
+                   <div className="flex gap-2">
+                      <div className="flex-1">
+                         <label className="text-xs text-blue-300 block mb-1">Yaş</label>
+                         <input type="number" value={adminEditForm.age} onChange={e => setAdminEditForm({...adminEditForm, age: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} />
+                      </div>
+                      <div className="flex-1">
+                          <label className="text-xs text-blue-300 block mb-1">Cins</label>
+                          <select value={adminEditForm.gender} onChange={e => setAdminEditForm({...adminEditForm, gender: e.target.value as any})} className={`w-full p-2 rounded border ${inputClass}`}>
+                             <option value="Kişi">Kişi</option>
+                             <option value="Qadın">Qadın</option>
+                          </select>
+                      </div>
+                   </div>
+                   <div>
+                      <label className="text-xs text-red-300 block mb-1">Şifrə (Admin dəyişə bilər)</label>
+                      <input type="text" value={adminEditForm.password} onChange={e => setAdminEditForm({...adminEditForm, password: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} />
+                   </div>
+                   <div>
+                      <label className="text-xs text-green-300 block mb-1">Ümumi Xal</label>
+                      <input type="number" value={adminEditForm.totalPoints} onChange={e => setAdminEditForm({...adminEditForm, totalPoints: Number(e.target.value)})} className={`w-full p-2 rounded border ${inputClass}`} />
+                   </div>
+                   
+                   <div className="flex gap-2 mt-4">
+                      <Button type="submit" fullWidth className="bg-green-700">Yadda saxla</Button>
+                      <Button type="button" fullWidth variant="secondary" onClick={() => setUserToEdit(null)}>Ləğv et</Button>
+                   </div>
+                </form>
+             </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+  
+  // Return the rest of the component
   return (
     <div className={`fixed inset-0 h-[100dvh] w-full overflow-hidden flex flex-col transition-colors duration-500 ${bgClass}`}>
       <div className="absolute inset-0 pointer-events-none z-0 overflow-hidden">
@@ -869,6 +1329,7 @@ const App: React.FC = () => {
          {gameStatus === GameStatus.TOPIC_SELECTION && renderTopicSelection()}
          {gameStatus === GameStatus.PLAYING && renderPlaying()}
          {gameStatus === GameStatus.PROFILE && renderProfile()}
+         {gameStatus === GameStatus.ADMIN_DASHBOARD && renderAdminDashboard()}
          {(gameStatus === GameStatus.WON || gameStatus === GameStatus.LOST) && renderGameOver(gameStatus === GameStatus.WON)}
       </div>
     </div>

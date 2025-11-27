@@ -17,7 +17,8 @@ export enum GameStatus {
   WON = 'WON',
   LOST = 'LOST',
   PROFILE = 'PROFILE',
-  LEADERBOARD = 'LEADERBOARD'
+  LEADERBOARD = 'LEADERBOARD',
+  ADMIN_DASHBOARD = 'ADMIN_DASHBOARD'
 }
 
 export enum AnswerState {
