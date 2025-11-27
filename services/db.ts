@@ -18,12 +18,12 @@ import { User } from "../types";
 
 const firebaseConfig: any = {
   // Bura öz API açarlarını yazmalısan:
-  // apiKey: "AIzaSyDjtML91jvDUait-CdCIRli7UUMupm3V18",
-  // authDomain: "bilmece-live.firebaseapp.com",
-  // projectId: "bilmece-live",
-  // storageBucket: "bilmece-live.firebasestorage.app",
-  // messagingSenderId: "23811133406",
-  // appId: "1:23811133406:web:1aed708a82bc4444a1d74f"
+ apiKey: "AIzaSyDjtML91jvDUait-CdCIRli7UUMupm3V18",
+ authDomain: "bilmece-live.firebaseapp.com",
+ projectId: "bilmece-live",
+ storageBucket: "bilmece-live.firebasestorage.app",
+ messagingSenderId: "23811133406",
+ appId: "1:23811133406:web:1aed708a82bc4444a1d74f"
 };
 
 // Əgər Firebase işə salmaq istəyirsənsə bunu true et!
