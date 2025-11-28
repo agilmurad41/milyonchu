@@ -463,7 +463,7 @@ const App: React.FC = () => {
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
       <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030] relative`}>
         <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
-        <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-bold">Oyun Qaydaları</h2></div>
+        <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-bold">Oyun qaydaları</h2></div>
         <div className="space-y-3 text-slate-300 text-sm md:text-base">
            <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Oyuna başlamaq üçün qeydiyyatdan keçin.</span></p>
            <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər mövzuda <strong>10 sual</strong> var.</span></p>
@@ -508,7 +508,7 @@ const App: React.FC = () => {
                       <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
                       <div className="flex items-center gap-2 relative z-10">
                         <Users size={16} className="text-blue-400 shrink-0" />
-                         <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">Oyunçu Sayı</span><span className="text-sm font-bold text-white leading-none font-mono">{playerCount.toLocaleString()}</span></div>
+                         <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">Oyunçu sayı</span><span className="text-sm font-bold text-white leading-none font-mono">{playerCount.toLocaleString()}</span></div>
                       </div>
                    </div>
                 </div>
@@ -535,14 +535,14 @@ const App: React.FC = () => {
                  </>
                ) : (
                  <>
-                   <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className={`${btnBase} bg-green-900/80 border-green-500 text-white`}><Play size={22} fill="currentColor" /> Oyuna Başla</Button>
+                   <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className={`${btnBase} bg-green-900/80 border-green-500 text-white`}><Play size={22} fill="currentColor" /> Oyuna başla</Button>
                    {isAdmin && <Button fullWidth onClick={() => setGameStatus(GameStatus.ADMIN_DASHBOARD)} className={`${btnBase} bg-gray-800/80 border-gray-500 text-white`}><Wrench size={20} /> Admin Panel</Button>}
                     <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> Reytinq</Button>
                    <Button fullWidth onClick={handleLogout} className={`${btnBase} bg-red-900/60 border-red-500/80 text-red-100`}><LogOut size={20} /> Çıxış</Button>
                  </>
                )}
                </div>
-               <div className="text-[10px] text-white mt-4 font-mono">© 2025 by Aqil Muradov | Gemini 3</div>
+               <div className="text-[10px] text-white mt-4 font-mono">© 2025 by Agil Muradov | Gemini 3</div>
             </div>
         </div>
         {showHelp && renderHelpModal()}
@@ -556,7 +556,7 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
         <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-           <div className="flex items-center gap-3"><Trophy size={32} className="text-yellow-500" /><h2 className="text-xl font-bold text-white">Liderlər Cədvəli</h2></div>
+           <div className="flex items-center gap-3"><Trophy size={32} className="text-yellow-500" /><h2 className="text-xl font-bold text-white">Reytinq cədvəli</h2></div>
            <Button variant="secondary" onClick={() => setGameStatus(previousStatus || GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><ArrowLeft size={18} /></Button>
         </div>
         <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
