@@ -1,3 +1,4 @@
+
 import { initializeApp } from "firebase/app";
 import { 
   getFirestore, 
@@ -8,9 +9,10 @@ import {
   updateDoc, 
   query, 
   where,
-  deleteDoc
+  deleteDoc,
+  addDoc
 } from "firebase/firestore";
-import { User } from "../types";
+import { User, Question, Topic } from "../types";
 
 // --- KONFİQURASİYA ---
 // 1. Firebase Konsolundan aldığın "firebaseConfig" obyektini aşağıya yapışdır.
@@ -33,12 +35,14 @@ const USE_CLOUD_DB = true;
 
 let db: any;
 let usersCollection: any;
+let questionsCollection: any;
 
 if (USE_CLOUD_DB && firebaseConfig.apiKey) {
   try {
     const app = initializeApp(firebaseConfig);
     db = getFirestore(app);
     usersCollection = collection(db, "users");
+    questionsCollection = collection(db, "questions");
     console.log("🔥 Firebase qoşuldu!");
   } catch (e) {
     console.error("Firebase qoşulma xətası:", e);
@@ -50,7 +54,8 @@ const LOCAL_KEY = 'milyoncu_users_db';
 
 export const dbService = {
   
-  // Bütün istifadəçiləri gətir
+  // --- USERS ---
+
   getUsers: async (): Promise<User[]> => {
     if (USE_CLOUD_DB && db) {
       try {
@@ -65,16 +70,13 @@ export const dbService = {
         return [];
       }
     } else {
-      // Local Storage Fallback
       return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]');
     }
   },
 
-  // İstifadəçi əlavə et (Qeydiyyat)
   addUser: async (user: User): Promise<boolean> => {
     if (USE_CLOUD_DB && db) {
       try {
-        // İstifadəçi adı unikal ID kimi istifadə olunur
         await setDoc(doc(db, "users", user.username), user);
         return true;
       } catch (e) {
@@ -89,7 +91,6 @@ export const dbService = {
     }
   },
 
-  // İstifadəçi məlumatını yenilə (Xal, Profil)
   updateUser: async (username: string, updates: Partial<User>): Promise<boolean> => {
     if (USE_CLOUD_DB && db) {
       try {
@@ -112,7 +113,6 @@ export const dbService = {
     }
   },
 
-  // İstifadəçini sil (Admin funksiyası)
   deleteUser: async (username: string): Promise<boolean> => {
     if (USE_CLOUD_DB && db) {
       try {
@@ -127,6 +127,83 @@ export const dbService = {
       users = users.filter(u => u.username !== username);
       localStorage.setItem(LOCAL_KEY, JSON.stringify(users));
       return true;
+    }
+  },
+
+  // --- QUESTIONS (Firebase Only) ---
+
+  // Mövzuya uyğun sualları gətir
+  getQuestions: async (topic?: Topic): Promise<Question[]> => {
+    if (USE_CLOUD_DB && db) {
+      try {
+        let q = questionsCollection;
+        if (topic) {
+          q = query(questionsCollection, where("topic", "==", topic));
+        }
+        const snapshot = await getDocs(q);
+        const questions: Question[] = [];
+        snapshot.forEach((doc: any) => {
+          questions.push({ id: doc.id, ...doc.data() } as Question);
+        });
+        return questions;
+      } catch (e) {
+        console.error("Sual gətirmə xətası:", e);
+        return [];
+      }
+    }
+    return []; // Local storage sual dəstəkləmir (static fayldan istifadə edilir)
+  },
+
+  // Sual əlavə et
+  addQuestion: async (question: Omit<Question, 'id'>): Promise<boolean> => {
+    if (USE_CLOUD_DB && db) {
+      try {
+        await addDoc(questionsCollection, question);
+        return true;
+      } catch (e) {
+        console.error("Sual əlavə etmə xətası:", e);
+        return false;
+      }
+    }
+    return false;
+  },
+
+  // Sualı yenilə
+  updateQuestion: async (id: string, updates: Partial<Question>): Promise<boolean> => {
+    if (USE_CLOUD_DB && db) {
+      try {
+        const qRef = doc(db, "questions", id);
+        await updateDoc(qRef, updates);
+        return true;
+      } catch (e) {
+        console.error("Sual yeniləmə xətası:", e);
+        return false;
+      }
+    }
+    return false;
+  },
+
+  // Sualı sil
+  deleteQuestion: async (id: string): Promise<boolean> => {
+    if (USE_CLOUD_DB && db) {
+      try {
+        await deleteDoc(doc(db, "questions", id));
+        return true;
+      } catch (e) {
+        console.error("Sual silmə xətası:", e);
+        return false;
+      }
+    }
+    return false;
+  },
+
+  // Toplu sual yükləmə (Seeding)
+  seedQuestions: async (questions: any[]): Promise<void> => {
+    if (USE_CLOUD_DB && db) {
+      console.log("Suallar bazaya yüklənir...");
+      const batchPromises = questions.map(q => addDoc(questionsCollection, q));
+      await Promise.all(batchPromises);
+      console.log("Bütün suallar yükləndi!");
     }
   }
 };

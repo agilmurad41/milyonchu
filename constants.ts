@@ -1,20 +1,16 @@
-import { Question, Topic, TopicInfo } from './types';
-import { Globe, BookOpen, Palette, Moon, Rocket, Clapperboard } from 'lucide-react';
 
-// Adjusted to 10 Levels as originally requested to conserve question pool
-export const PRIZE_LADDER = [
-  "100 ₼", "200 ₼", "300 ₼", "500 ₼",            // 1-4 (Easy)
-  "1,000 ₼", "2,000 ₼", "4,000 ₼",               // 5-7 (Medium)
-  "8,000 ₼", "16,000 ₼", "1,000,000 ₼"           // 8-10 (Hard)
-];
+import { Question, Topic, TopicInfo } from './types';
+import { Globe, BookOpen, Palette, Moon, Rocket, Clapperboard, Cpu, Dumbbell } from 'lucide-react';
 
 export const TOPICS: TopicInfo[] = [
-  { id: 'COGRAFIYA', label: 'Coğrafiya', icon: 'Globe', description: 'Dünya ölkələri, paytaxtlar və təbiət', color: 'cyan' },
+  { id: 'COGRAFIYA', label: 'Coğrafiya', icon: 'Globe', description: 'Dünya ölkələri, paytaxtlar və təbiət', color: 'blue' },
   { id: 'TARIX', label: 'Tarix', icon: 'BookOpen', description: 'Azərbaycan və Dünya tarixi, hadisələr', color: 'amber' },
   { id: 'INCESENET', label: 'İncəsənət', icon: 'Palette', description: 'Rəsm, Musiqi, Ədəbiyyat və Memarlıq', color: 'fuchsia' },
   { id: 'DIN', label: 'Din', icon: 'Moon', description: 'İslam tarixi, Peyğəmbərlər və inanclar', color: 'emerald' },
   { id: 'FANTASTIK', label: 'Fantastik', icon: 'Rocket', description: 'Elmi-fantastika, kosmos və gələcək', color: 'violet' },
   { id: 'FILM', label: 'Film', icon: 'Clapperboard', description: 'Kino, aktyorlar və məşhur sitatlar', color: 'rose' },
+  { id: 'TEXNOLOGIYA', label: 'Texnologiya', icon: 'Cpu', description: 'Kompüterlər, İxtiralar və İT', color: 'cyan' },
+  { id: 'IDMAN', label: 'İdman', icon: 'Dumbbell', description: 'Futbol, Olimpiada və İdman növləri', color: 'orange' },
 ];
 
 // Helper to create questions
@@ -25,7 +21,7 @@ const createQ = (text: string, options: string[], correct: number): Omit<Questio
 });
 
 // --- QUESTION DATABASE BY TOPIC ---
-const DB: Record<Topic, { easy: any[], medium: any[], hard: any[] }> = {
+const DB: Record<string, { easy: any[], medium: any[], hard: any[] }> = {
   COGRAFIYA: {
     easy: [
       createQ("Azərbaycanın paytaxtı haradır?", ["Gəncə", "Bakı", "Sumqayıt", "Lənkəran"], 1),
@@ -266,26 +262,64 @@ const DB: Record<Topic, { easy: any[], medium: any[], hard: any[] }> = {
       createQ("Kann festivalının baş mükafatı?", ["Qızıl Palma", "Qızıl Şir", "Oskar", "Qızıl Ayı"], 0),
     ]
   },
+  TEXNOLOGIYA: {
+    easy: [
+      createQ("iPhone-u hansı şirkət istehsal edir?", ["Samsung", "Apple", "Nokia", "Sony"], 1),
+      createQ("Windows əməliyyat sisteminin yaradıcısı kimdir?", ["Bill Gates", "Steve Jobs", "Mark Zuckerberg", "Elon Musk"], 0),
+      createQ("Kompüterin beyni nə sayılır?", ["Monitor", "Prosessor", "Maus", "Klaviatura"], 1),
+      createQ("WWW nə deməkdir?", ["World Wide Web", "World Web War", "Wide World Web", "Web World Wide"], 0),
+    ],
+    medium: [
+      createQ("Süni İntellekt (AI) nədir?", ["Robot", "Proqram", "Ağıllı sistem", "Hamısı"], 3),
+      createQ("Python nədir?", ["İlan", "Proqramlaşdırma dili", "Oyun", "Film"], 1),
+      createQ("Wifi nə üçün istifadə olunur?", ["Yemək bişirmək", "İnternetə qoşulmaq", "Şəkil çəkmək", "Musiqi dinləmək"], 1),
+    ],
+    hard: [
+      createQ("İlk kompüter proqramçısı kim sayılır?", ["Ada Lovelace", "Alan Turing", "Charles Babbage", "Grace Hopper"], 0),
+      createQ("HTTP protokolunda S hərfi nəyi bildirir?", ["Speed", "Secure", "System", "Server"], 1),
+      createQ("Blockchain texnologiyası əsasən harada istifadə olunur?", ["Kriptovalyuta", "Sosial şəbəkə", "Bulud yaddaşı", "Oyunlar"], 0),
+    ]
+  },
+  IDMAN: {
+    easy: [
+      createQ("Futbol komandasında neçə oyunçu olur?", ["11", "9", "7", "12"], 0),
+      createQ("Qarabağ FK hansı şəhəri təmsil edir?", ["Bakı", "Ağdam", "Gəncə", "Şuşa"], 1),
+      createQ("Olimpiya oyunları neçə ildən bir keçirilir?", ["2", "4", "3", "5"], 1),
+      createQ("Lionel Messi hansı ölkənin vətəndaşıdır?", ["Braziliya", "Portuqaliya", "Argentina", "İspaniya"], 2),
+      createQ("Voleybolda topa əl ilə vurmaq olar?", ["Bəli", "Xeyr", "Bəzən", "Yalnız kapitan"], 0),
+    ],
+    medium: [
+      createQ("Dünya Çempionatı kuboku neçə kiloqram qızıldan ibarətdir?", ["5 kq", "6.1 kq", "3 kq", "10 kq"], 1),
+      createQ("Azərbaycanın ilk Olimpiya çempionu kimdir?", ["Namiq Abdullayev", "Nazim Hüseynov", "Elnur Məmmədli", "Toğrul Əsgərov"], 1),
+      createQ("Basketbol oyununda bir komandada neçə nəfər olur?", ["5", "6", "7", "11"], 0),
+      createQ("Tennisdə 'Love' termini nə deməkdir?", ["Sevgi", "Sıfır xal", "Qələbə", "Bərabərlik"], 1),
+      createQ("Forma 1 yarışlarında ən çox çempion olan pilotlardan biri?", ["Hamilton", "Verstappen", "Alonso", "Perez"], 0),
+    ],
+    hard: [
+      createQ("İlk Dünya Kuboku hansı ildə keçirilib?", ["1930", "1950", "1924", "1938"], 0),
+      createQ("Marafon qaçışının məsafəsi nə qədərdir?", ["40 km", "42.195 km", "45 km", "38 km"], 1),
+      createQ("Cüdo idman növü hansı ölkədə yaranıb?", ["Çin", "Koreya", "Yaponiya", "Monqolustan"], 2),
+      createQ("Qızıl Top (Ballon d'Or) mükafatını ən çox kim qazanıb?", ["Ronaldo", "Messi", "Pele", "Maradona"], 1),
+      createQ("100 metr qaçış üzrə dünya rekordu kimə məxsusdur?", ["Usain Bolt", "Tyson Gay", "Yohan Blake", "Carl Lewis"], 0),
+    ]
+  }
 };
 
 export const getQuestionsByTopic = (topic: Topic, seenQuestions: string[] = []): Question[] => {
   const topicData = DB[topic];
+  if (!topicData) return []; // Handle cases where topic might not exist in DB yet
   const { easy, medium, hard } = topicData;
 
   const getUnseen = (pool: any[]) => pool.filter(q => !seenQuestions.includes(q.text));
 
-  // If we run out of unseen questions, we might reuse some, 
-  // but let's try to get unseen first.
   let availEasy = getUnseen(easy);
   let availMedium = getUnseen(medium);
   let availHard = getUnseen(hard);
 
-  // Fallback if not enough questions (shuffle and reuse if needed)
   if (availEasy.length < 4) availEasy = easy; 
   if (availMedium.length < 3) availMedium = medium;
   if (availHard.length < 3) availHard = hard;
 
-  // Shuffle arrays
   const shuffle = (arr: any[]) => [...arr].sort(() => 0.5 - Math.random());
   
   const selectedEasy = shuffle(availEasy).slice(0, 4);
@@ -294,12 +328,10 @@ export const getQuestionsByTopic = (topic: Topic, seenQuestions: string[] = []):
 
   const gameQuestions = [...selectedEasy, ...selectedMedium, ...selectedHard];
 
-  // Map to Question type with ID and Prize
   return gameQuestions.map((q, index) => ({
     id: index + 1,
     text: q.text,
     options: q.options,
     correctAnswerIndex: q.correctAnswerIndex,
-    prize: PRIZE_LADDER[index]
   }));
 };

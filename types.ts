@@ -1,10 +1,11 @@
 
 export interface Question {
-  id: number;
+  id: string | number; // Support both DB string IDs and local number IDs
   text: string;
   options: string[]; // Array of 4 strings
   correctAnswerIndex: number; // 0-3
-  prize: string;
+  topic?: string; // For DB storage
+  difficulty?: 'easy' | 'medium' | 'hard'; // For DB storage
 }
 
 export enum GameStatus {
@@ -53,7 +54,7 @@ export interface User {
   seenQuestions: string[]; // List of question texts already answered correctly
 }
 
-export type Topic = 'COGRAFIYA' | 'TARIX' | 'INCESENET' | 'DIN' | 'FANTASTIK' | 'FILM';
+export type Topic = 'COGRAFIYA' | 'TARIX' | 'INCESENET' | 'DIN' | 'FANTASTIK' | 'FILM' | 'TEXNOLOGIYA' | 'IDMAN';
 
 export interface TopicInfo {
   id: Topic;

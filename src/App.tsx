@@ -32,17 +32,12 @@ import {
   Edit,
   Search,
   PlusCircle,
-  Database,
-  Cpu,
-  Feather,
-  Dumbbell,
-  User as UserIcon,
-  Home
+  Database
 } from 'lucide-react';
 
 // --- ICONS MAPPING ---
 const ICON_MAP: Record<string, React.ElementType> = {
-  Globe, BookOpen, Palette, Moon, Rocket, Clapperboard, Trophy, Cpu, Feather, Dumbbell
+  Globe, BookOpen, Palette, Moon, Rocket, Clapperboard, Trophy
 };
 
 // Custom Logo Component
@@ -130,7 +125,6 @@ const App: React.FC = () => {
     gender: '' as 'Kişi' | 'Qadın' | '' 
   });
   const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saved'>('idle');
-  const [showProfileModal, setShowProfileModal] = useState(false);
 
   // ADMIN STATE
   const [adminTab, setAdminTab] = useState<'users' | 'questions'>('users');
@@ -169,16 +163,6 @@ const App: React.FC = () => {
   };
 
   useEffect(() => {
-    // Check session on load
-    const savedUser = localStorage.getItem('bilmece_user_session');
-    if (savedUser) {
-      try {
-        const user = JSON.parse(savedUser);
-        setCurrentUser(user);
-      } catch (e) {
-        console.error("Session parse error", e);
-      }
-    }
     refreshLeaderboard();
   }, []);
 
@@ -233,12 +217,7 @@ const App: React.FC = () => {
 
     const newUser: User = { username: authForm.username, password: authForm.password, name: authForm.name, age: authForm.age, gender: authForm.gender, totalPoints: 0, completedTopics: [], gamesPlayed: 0, seenQuestions: [] };
     const success = await dbService.addUser(newUser);
-    if (success) { 
-        setCurrentUser(newUser);
-        localStorage.setItem('bilmece_user_session', JSON.stringify(newUser));
-        setRegistrationSuccess(true); 
-        refreshLeaderboard(); 
-    } 
+    if (success) { setCurrentUser(newUser); setRegistrationSuccess(true); refreshLeaderboard(); } 
     else { setAuthError("Qeydiyyat xətası baş verdi."); }
     setIsAuthLoading(false);
   };
@@ -258,18 +237,13 @@ const App: React.FC = () => {
     if (foundUser) {
       if (!foundUser.seenQuestions) foundUser.seenQuestions = [];
       setCurrentUser(foundUser);
-      localStorage.setItem('bilmece_user_session', JSON.stringify(foundUser));
       setGameStatus(GameStatus.AUTH_CHOICE);
       setAuthForm({ username: '', password: '', name: '', age: '', gender: '' });
     } else { setAuthError("İstifadəçi adı və ya şifrə yanlışdır."); }
     setIsAuthLoading(false);
   };
 
-  const handleLogout = () => { 
-      setCurrentUser(null); 
-      localStorage.removeItem('bilmece_user_session');
-      setGameStatus(GameStatus.AUTH_CHOICE); 
-  };
+  const handleLogout = () => { setCurrentUser(null); setGameStatus(GameStatus.AUTH_CHOICE); };
 
   // SCORING LOGIC - 50 Points Fixed
   const updateUserStats = async (points: number, topicCompleted?: string) => {
@@ -286,20 +260,14 @@ const App: React.FC = () => {
       completedTopics: updatedUser.completedTopics,
       seenQuestions: updatedUser.seenQuestions 
     });
-    if (success) { 
-        setCurrentUser(updatedUser); 
-        localStorage.setItem('bilmece_user_session', JSON.stringify(updatedUser));
-        refreshLeaderboard(); 
-    }
+    if (success) { setCurrentUser(updatedUser); refreshLeaderboard(); }
   };
 
   const markQuestionAsSeen = async (questionText: string) => {
     if (!currentUser) return;
     if (currentUser.seenQuestions.includes(questionText)) return;
     const updatedList = [...currentUser.seenQuestions, questionText];
-    const updatedUser = { ...currentUser, seenQuestions: updatedList };
-    setCurrentUser(updatedUser);
-    localStorage.setItem('bilmece_user_session', JSON.stringify(updatedUser));
+    setCurrentUser({ ...currentUser, seenQuestions: updatedList });
     await dbService.updateUser(currentUser.username, { seenQuestions: updatedList });
   };
 
@@ -308,14 +276,7 @@ const App: React.FC = () => {
     if (!currentUser) return;
     const updates = { name: editProfileForm.name, age: editProfileForm.age, gender: editProfileForm.gender };
     const success = await dbService.updateUser(currentUser.username, updates);
-    if (success) { 
-        const updatedUser = { ...currentUser, ...updates };
-        setCurrentUser(updatedUser); 
-        localStorage.setItem('bilmece_user_session', JSON.stringify(updatedUser));
-        setProfileSaveStatus('saved'); 
-        setTimeout(() => setProfileSaveStatus('idle'), 2000); 
-        refreshLeaderboard(); 
-    }
+    if (success) { setCurrentUser({ ...currentUser, ...updates }); setProfileSaveStatus('saved'); setTimeout(() => setProfileSaveStatus('idle'), 2000); refreshLeaderboard(); }
   };
 
   // ADMIN - USERS
@@ -428,6 +389,8 @@ const App: React.FC = () => {
   };
 
   const startGameWithTopic = async (topic: Topic) => {
+    if (currentUser?.completedTopics.includes(topic)) return;
+    
     // Try to get questions from DB first
     let gameQuestions = await dbService.getQuestions(topic);
     
@@ -513,45 +476,6 @@ const App: React.FC = () => {
     </div>
   );
 
-  const renderProfileModal = () => (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-[#000030]/90 p-6 rounded-2xl border border-blue-500/50 shadow-2xl w-full max-w-md backdrop-blur-md relative">
-         <button onClick={() => setShowProfileModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24}/></button>
-         <h2 className="text-xl font-bold text-white mb-6">Profil</h2>
-         {currentUser && (
-           <form onSubmit={handleProfileUpdate} className="space-y-4">
-               <div>
-                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">İstifadəçi adı</label>
-                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed" />
-               </div>
-               <div>
-                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Ad Soyad</label>
-                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
-               </div>
-               <div className="flex gap-3">
-                  <div className="flex-1">
-                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Yaş</label>
-                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Cins</label>
-                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors">
-                      <option value="Kişi">Kişi</option>
-                      <option value="Qadın">Qadın</option>
-                    </select>
-                  </div>
-               </div>
-               <div className="pt-2">
-                 <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Toplam Xal:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
-                 <div className="flex justify-between text-sm text-slate-400"><span>Oynanılan Oyunlar:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
-               </div>
-               <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? 'Yadda saxlanıldı!' : 'Yadda saxla'}</Button>
-           </form>
-         )}
-      </div>
-    </div>
-  );
-
   const renderAuthChoice = () => {
     const isLoggedIn = !!currentUser;
     const isAdmin = currentUser?.username === 'admin';
@@ -589,28 +513,17 @@ const App: React.FC = () => {
                    </div>
                 </div>
             </div>
-            
-            {/* Welcome User Section - HORIZONTAL LAYOUT TO FIX OVERLAPPING */}
             <div className="flex-1 flex flex-col items-center justify-center w-full px-4 py-2 min-h-[60px]">
                {isLoggedIn && (
-                  <div className="flex items-center justify-between w-full max-w-xs mx-auto bg-[#000040]/80 p-3 rounded-xl border border-blue-500/30 backdrop-blur-md shadow-lg animate-fade-in mb-2 gap-3">
-                     <div className="flex items-center gap-3 min-w-0">
-                        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white shrink-0 border border-blue-400 shadow-inner">
-                           {currentUser.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="flex flex-col min-w-0">
-                           <span className="text-[9px] text-blue-300 uppercase font-bold tracking-wider leading-none mb-1">Xoş gəldin</span>
-                           <span className="text-sm font-bold text-white truncate leading-none">{currentUser.name}</span>
-                        </div>
-                     </div>
-                     <div className="flex items-center gap-1.5 bg-[#000020]/80 px-3 py-1.5 rounded-lg border border-yellow-500/30 shadow-inner shrink-0">
-                        <Trophy size={14} className="text-yellow-400" />
-                        <span className="font-mono font-bold text-yellow-400 text-sm">{currentUser.totalPoints}</span>
+                  <div className="text-center animate-fade-in bg-[#000040]/50 p-4 rounded-2xl border border-blue-500/20 backdrop-blur-sm shadow-xl w-full max-w-xs mx-auto">
+                     <p className={`text-[10px] text-blue-300 mb-2 uppercase tracking-[0.2em] font-bold`}>Xoş gəldin</p>
+                     <h2 className="text-xl md:text-2xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)] mb-3 truncate">{currentUser.name}</h2>
+                     <div className="flex items-center justify-center gap-2 text-yellow-400 bg-[#000030] px-5 py-2 rounded-full border border-yellow-600/50 mx-auto w-fit shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                        <Trophy size={18} className="text-yellow-500" /><span className="font-bold text-base md:text-lg">{currentUser.totalPoints} xal</span>
                      </div>
                   </div>
                )}
             </div>
-
             <div className="w-full px-6 pb-4 md:pb-6 flex flex-col items-center shrink-0 max-w-xs mx-auto z-20">
                <div className="w-full flex flex-col gap-3">
                {!isLoggedIn ? (
@@ -633,7 +546,6 @@ const App: React.FC = () => {
             </div>
         </div>
         {showHelp && renderHelpModal()}
-        {showProfileModal && renderProfileModal()}
       </div>
     );
   };
@@ -863,17 +775,14 @@ const App: React.FC = () => {
 
   const renderTopicSelection = () => (
     <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
-      <div className="flex justify-between items-center mb-4 shrink-0 bg-slate-900/80 p-3 rounded-xl border border-slate-700">
-         <div className="flex items-center gap-3">
-             <BrainCircuit size={24} className="text-blue-400" />
-             <h2 className="text-base font-bold text-white uppercase tracking-wide">Mövzu Seçimi</h2>
-         </div>
+      <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
+         <div className="flex items-center gap-3"><BrainCircuit size={32} className="text-blue-400" /><h2 className="text-xl font-bold text-white">Mövzu Seçimi</h2></div>
          <div className="flex gap-2">
-             <button onClick={() => setGameStatus(GameStatus.PROFILE)} className="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white hover:bg-blue-500 border border-blue-400 transition-all"><UserIcon size={20} /></button>
-             <button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="w-10 h-10 rounded-lg bg-slate-700 flex items-center justify-center text-slate-300 hover:bg-slate-600 border border-slate-500 transition-all"><Home size={20} /></button>
+            <Button variant="secondary" onClick={() => setGameStatus(GameStatus.PROFILE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><Edit size={18} /></Button>
+            <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><ArrowLeft size={18} /></Button>
          </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto pb-4 [&::-webkit-scrollbar]:hidden">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4">
         {TOPICS.map((topic) => {
            const Icon = ICON_MAP[topic.icon] || Globe;
            const isCompleted = currentUser?.completedTopics.includes(topic.id);
@@ -884,24 +793,22 @@ const App: React.FC = () => {
            if(topic.color === 'emerald') colorClass = "border-emerald-500/50 hover:border-emerald-400 bg-emerald-900/20 hover:bg-emerald-900/40";
            if(topic.color === 'violet') colorClass = "border-violet-500/50 hover:border-violet-400 bg-violet-900/20 hover:bg-violet-900/40";
            if(topic.color === 'rose') colorClass = "border-rose-500/50 hover:border-rose-400 bg-rose-900/20 hover:bg-rose-900/40";
-           if(topic.color === 'cyan') colorClass = "border-cyan-500/50 hover:border-cyan-400 bg-cyan-900/20 hover:bg-cyan-900/40";
-           if(topic.color === 'orange') colorClass = "border-orange-500/50 hover:border-orange-400 bg-orange-900/20 hover:bg-orange-900/40";
 
            return (
              <button
                key={topic.id}
                onClick={() => startGameWithTopic(topic.id)}
                disabled={isCompleted}
-               className={`relative p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-300 group h-40 ${isCompleted ? 'opacity-50 grayscale cursor-not-allowed border-slate-700 bg-slate-800' : colorClass}`}
+               className={`relative p-6 rounded-2xl border-2 flex flex-col items-center justify-center gap-4 transition-all duration-300 group ${isCompleted ? 'opacity-50 grayscale cursor-not-allowed border-slate-700 bg-slate-800' : colorClass}`}
              >
-                <div className={`p-3 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors`}>
-                   <Icon size={28} className="text-white drop-shadow-md" />
+                <div className={`p-4 rounded-full bg-white/5 group-hover:bg-white/10 transition-colors`}>
+                   <Icon size={40} className="text-white drop-shadow-md" />
                 </div>
                 <div className="text-center">
-                   <h3 className="text-sm font-bold text-white mb-0.5">{topic.label}</h3>
-                   <p className="text-[10px] text-slate-300 leading-tight px-1">{topic.description}</p>
+                   <h3 className="text-lg md:text-xl font-bold text-white mb-1">{topic.label}</h3>
+                   <p className="text-xs md:text-sm text-slate-300">{topic.description}</p>
                 </div>
-                {isCompleted && <div className="absolute top-2 right-2 text-green-500"><CheckCircle size={18} /></div>}
+                {isCompleted && <div className="absolute top-2 right-2 text-green-500"><CheckCircle size={24} /></div>}
              </button>
            );
         })}
@@ -916,38 +823,40 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full w-full relative z-10 max-w-5xl mx-auto md:px-4">
          {/* Top Bar */}
-         <div className="flex justify-between items-center p-4 shrink-0">
-             <div className="flex gap-3 items-center">
-               <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white border border-slate-600"><ArrowLeft size={20}/></button>
-               <div className="bg-slate-900/80 px-4 py-1.5 rounded-full border border-blue-500/30 flex items-center gap-2">
-                 <span className="text-blue-300 text-[10px] font-bold uppercase tracking-wider">SUAL</span>
+         <div className="flex justify-between items-start p-4 shrink-0">
+             <div className="flex gap-2 items-center">
+               <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white border border-slate-600"><ArrowLeft size={20}/></button>
+               <div className="bg-slate-900/80 px-4 py-2 rounded-full border border-blue-500/30 flex items-center gap-2">
+                 <span className="text-blue-300 text-xs font-bold uppercase tracking-wider">Sual</span>
                  <span className="text-white font-mono font-bold">{currentQuestionIndex + 1}/10</span>
                </div>
              </div>
-             <button onClick={() => setShowProfileModal(true)} className="w-10 h-10 rounded-full bg-violet-600 border-2 border-violet-400 flex items-center justify-center text-white font-bold shadow-lg hover:bg-violet-500 transition-colors">
-                {currentUser?.name?.charAt(0).toUpperCase() || "A"}
-             </button>
+             <div className="flex gap-2">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg border-4 transition-all ${timeLeft <= 10 ? 'border-red-500 text-red-500 animate-pulse' : 'border-blue-500 text-blue-400'} bg-slate-900 shadow-lg`}>
+                  {timeLeft}
+                </div>
+             </div>
          </div>
 
-         {/* Center Content */}
+         {/* Money Tree (Hidden on mobile, drawer on desktop usually, but let's just show current Prize) */}
+         <div className="absolute top-20 right-4 hidden md:block z-20">
+            <MoneyTree currentLevel={currentQuestionIndex} />
+         </div>
+         
          <div className="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-3xl mx-auto">
-             {/* Question Card with Timer Overlay */}
-             <div className="relative w-full mb-8 mt-4">
-                <div className="absolute -top-6 left-1/2 -translate-x-1/2 z-20">
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center font-bold text-xl border-4 bg-[#000040] shadow-xl ${timeLeft <= 10 ? 'border-red-500 text-red-500 animate-pulse' : 'border-blue-500 text-white'}`}>
-                        {timeLeft}
-                    </div>
+             {/* Question Card */}
+             <div className="w-full bg-[#000040]/90 border-2 border-blue-500/50 rounded-2xl p-6 md:p-8 shadow-[0_0_30px_rgba(59,130,246,0.3)] backdrop-blur-md mb-6 md:mb-10 text-center relative animate-fade-in-up">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-blue-600 px-4 py-1 rounded-full text-xs font-bold text-white shadow-lg uppercase tracking-widest border border-blue-400">
+                  {currentQ.prize}
                 </div>
-                <div className="w-full bg-[#000040]/95 border-2 border-blue-600 rounded-xl p-8 pt-10 shadow-[0_0_30px_rgba(37,99,235,0.2)] text-center min-h-[160px] flex items-center justify-center">
-                    <h2 className="text-lg md:text-2xl font-bold text-white leading-relaxed">{currentQ.text}</h2>
-                </div>
+                <h2 className="text-lg md:text-2xl font-bold text-white leading-relaxed">{currentQ.text}</h2>
              </div>
 
              {/* Options Grid */}
-             <div className="flex flex-col gap-3 w-full mb-8">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full mb-8">
                 {currentQ.options.map((opt, idx) => {
                    if (hiddenOptions.includes(idx)) {
-                     return <div key={idx} className="h-14"></div>; // Placeholder
+                     return <div key={idx} className="h-14 md:h-16"></div>; // Placeholder
                    }
                    
                    let variant: 'option' | 'primary' | 'secondary' = 'option';
@@ -968,11 +877,11 @@ const App: React.FC = () => {
                        onClick={() => handleAnswerSelect(idx)}
                        disabled={answerState !== AnswerState.IDLE}
                        className={`
-                         relative overflow-hidden group border rounded-lg p-3 text-left transition-all duration-200 shadow-md active:scale-95 flex items-center
-                         ${extraClass || "bg-slate-800/80 border-slate-600 hover:bg-slate-700 text-white"}
+                         relative overflow-hidden group border-2 rounded-xl p-3 md:p-4 text-left transition-all duration-200 shadow-md active:scale-95 flex items-center
+                         ${extraClass || "bg-slate-800/80 border-slate-600 hover:bg-blue-900/60 hover:border-blue-400 text-white"}
                        `}
                      >
-                       <span className="font-bold text-yellow-500 mr-3 text-base">{['A','B','C','D'][idx]}:</span>
+                       <span className="font-bold text-yellow-500 mr-3 text-lg">{['A','B','C','D'][idx]}:</span>
                        <span className="font-medium text-sm md:text-base">{opt}</span>
                      </button>
                    );
@@ -980,32 +889,29 @@ const App: React.FC = () => {
              </div>
 
              {/* Lifelines Bar */}
-             <div className="flex gap-4 justify-center w-full mt-auto pb-4">
+             <div className="flex gap-4 justify-center w-full">
                 <button 
                   onClick={useFiftyFifty} 
                   disabled={!lifelines.fiftyFifty || answerState !== AnswerState.IDLE} 
                   className={`flex flex-col items-center gap-1 transition-all active:scale-90 ${!lifelines.fiftyFifty || answerState !== AnswerState.IDLE ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:-translate-y-1'}`}
                 >
-                  <div className="w-12 h-12 rounded-full bg-purple-600 border-2 border-purple-400 flex items-center justify-center font-bold text-white text-xs shadow-lg">50:50</div>
-                  <span className="text-[10px] text-purple-300 font-bold">50/50</span>
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-purple-600 to-purple-900 border-2 border-purple-400 flex items-center justify-center font-bold text-white text-xs md:text-sm shadow-lg">50:50</div>
                 </button>
                 <button 
                    onClick={useAskAudience} 
                    disabled={!lifelines.askAudience || answerState !== AnswerState.IDLE}
                    className={`flex flex-col items-center gap-1 transition-all active:scale-90 ${!lifelines.askAudience || answerState !== AnswerState.IDLE ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:-translate-y-1'}`}
                 >
-                   <div className="w-12 h-12 rounded-full bg-cyan-600 border-2 border-cyan-400 flex items-center justify-center text-white shadow-lg"><Users size={20} /></div>
-                   <span className="text-[10px] text-cyan-300 font-bold">Auditoriya</span>
+                   <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-cyan-600 to-cyan-900 border-2 border-cyan-400 flex items-center justify-center text-white shadow-lg"><Users size={24} /></div>
                 </button>
                 <button 
                    onClick={useAskAI} 
                    disabled={!lifelines.askAI || answerState !== AnswerState.IDLE || aiLoading}
                    className={`flex flex-col items-center gap-1 transition-all active:scale-90 ${!lifelines.askAI || answerState !== AnswerState.IDLE ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:-translate-y-1'}`}
                 >
-                   <div className="w-12 h-12 rounded-full bg-emerald-600 border-2 border-emerald-400 flex items-center justify-center text-white shadow-lg relative">
-                      {aiLoading ? <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div> : <BrainCircuit size={20} />}
+                   <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-gradient-to-br from-emerald-600 to-emerald-900 border-2 border-emerald-400 flex items-center justify-center text-white shadow-lg relative">
+                      {aiLoading ? <div className="animate-spin h-5 w-5 border-2 border-white rounded-full border-t-transparent"></div> : <BrainCircuit size={24} />}
                    </div>
-                   <span className="text-[10px] text-emerald-300 font-bold">Bilgə İnsan</span>
                 </button>
              </div>
          </div>

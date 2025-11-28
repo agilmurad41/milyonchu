@@ -1,3 +1,4 @@
+
 import { GoogleGenAI } from "@google/genai";
 
 // Function to generate a hint for the question
@@ -9,8 +10,9 @@ export const getAIHint = async (question: string, options: string[]): Promise<st
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
+    // Updated prompt for direct Answer
     const prompt = `
-      Sən "Kim Milyoner Olmaq İstəyir?" oyununda köməkçi "Bilgə İnsan"san.
+      Sən "Bilməcə Live" oyununda köməkçi "Bilgə İnsan"san.
       
       Sual: "${question}"
       Variantlar:
@@ -19,10 +21,9 @@ export const getAIHint = async (question: string, options: string[]): Promise<st
       C) ${options[2]}
       D) ${options[3]}
       
-      Zəhmət olmasa, bu sualın düzgün cavabını tap və oyunçuya qısa, məntiqli bir izah ver. 
-      Cavabı birbaşa demə, amma elə izah et ki, 90% başa düşsün.
-      Cavab Azərbaycan dilində olmalıdır. 
-      Maksimum 2 cümlə.
+      Zəhmət olmasa, sualın düzgün cavabını BİRBAŞA de (Məsələn: "Düzgün cavab A variantıdır: [Cavabın mətni]").
+      Daha sonra cavabın niyə düzgün olduğunu qısa və maraqlı şəkildə izah et.
+      Cavab Azərbaycan dilində olmalıdır.
     `;
 
     const response = await ai.models.generateContent({
@@ -37,7 +38,6 @@ export const getAIHint = async (question: string, options: string[]): Promise<st
   }
 };
 
-// Function to generate an image based on the question
 export const generateQuestionImage = async (questionText: string): Promise<string | null> => {
   try {
     if (!process.env.API_KEY) {
@@ -47,7 +47,6 @@ export const generateQuestionImage = async (questionText: string): Promise<strin
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    // We create a visual prompt based on the question text
     const imagePrompt = `A high quality, cinematic, artistic illustration representing the following trivia question concept: "${questionText}". No text in the image. 4k resolution, detailed.`;
 
     const response = await ai.models.generateImages({
