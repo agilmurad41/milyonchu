@@ -343,8 +343,11 @@ const App: React.FC = () => {
   // ADMIN - QUESTIONS
   const handleSeedQuestions = async () => {
     if (window.confirm("Bütün mövcud suallar bazaya yüklənəcək. Davam edilsin?")) {
-      const allStaticQuestions = [];
+      const allStaticQuestions: any[] = [];
       TOPICS.forEach(topic => {
+        // This will get the 5/5/5 split logic from constants, effectively seeding 15 qs per topic.
+        // If we want ALL questions from constants, we'd need a different helper, 
+        // but for now this seeds a playable set.
         const qs = getQuestionsByTopic(topic.id, []); 
         qs.forEach(q => {
            allStaticQuestions.push({
@@ -352,7 +355,7 @@ const App: React.FC = () => {
              options: q.options,
              correctAnswerIndex: q.correctAnswerIndex,
              topic: topic.id,
-             difficulty: 'medium'
+             difficulty: q.difficulty || 'medium'
            });
         });
       });
@@ -428,16 +431,36 @@ const App: React.FC = () => {
   };
 
   const startGameWithTopic = async (topic: Topic) => {
-    // Try to get questions from DB first
-    let gameQuestions = await dbService.getQuestions(topic);
+    // 1. Try to get questions from DB first (Cloud)
+    let rawQuestions = await dbService.getQuestions(topic);
+    let gameQuestions: Question[] = [];
     
-    // If no questions in DB, fallback to local static file
-    if (gameQuestions.length === 0) {
-       console.log("DB boşdur, lokal suallardan istifadə edilir.");
-       gameQuestions = getQuestionsByTopic(topic, currentUser?.seenQuestions || []);
+    // Helper shuffle function
+    const shuffle = (arr: any[]) => [...arr].sort(() => 0.5 - Math.random());
+
+    // 2. Logic: 5 Easy, 5 Medium, 5 Hard
+    if (rawQuestions.length > 0) {
+       console.log("DB-dən suallar yüklənir...");
+       
+       const easy = rawQuestions.filter(q => q.difficulty === 'easy');
+       const medium = rawQuestions.filter(q => q.difficulty === 'medium');
+       const hard = rawQuestions.filter(q => q.difficulty === 'hard');
+
+       // If we have enough structure, pick 5 from each
+       if (easy.length >= 5 && medium.length >= 5 && hard.length >= 5) {
+          gameQuestions = [
+            ...shuffle(easy).slice(0, 5),
+            ...shuffle(medium).slice(0, 5),
+            ...shuffle(hard).slice(0, 5)
+          ];
+       } else {
+          // Fallback if structure is weak: just shuffle all and take 15
+          gameQuestions = shuffle(rawQuestions).slice(0, 15);
+       }
     } else {
-       // Shuffle and pick 10 if we have enough
-       gameQuestions = gameQuestions.sort(() => 0.5 - Math.random()).slice(0, 10);
+       console.log("DB boşdur, lokal suallardan istifadə edilir.");
+       // Fallback to local constants which already implements the 5/5/5 logic
+       gameQuestions = getQuestionsByTopic(topic, currentUser?.seenQuestions || []);
     }
 
     if (gameQuestions.length === 0) {
@@ -459,6 +482,12 @@ const App: React.FC = () => {
 
   const handleAnswerSelect = useCallback((index: number) => {
     if (answerState !== AnswerState.IDLE || !questions[currentQuestionIndex]) return;
+    
+    // Remove focus to prevent "blue" button state on next question
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     if (timerIntervalRef.current) clearInterval(timerIntervalRef.current);
     setSelectedAnswerIndex(index);
     setAnswerState(AnswerState.SELECTED);
@@ -476,7 +505,7 @@ const App: React.FC = () => {
           
           if (currentQuestionIndex + 1 >= questions.length) {
             setGameStatus(GameStatus.WON);
-            updateUserStats(50, selectedTopic || undefined); // Bonus for winning? Or just last question points.
+            updateUserStats(50, selectedTopic || undefined); // Bonus for winning
           } else {
             setCurrentQuestionIndex(prev => { const next = prev + 1; resetQuestionState(next); return next; });
           }
@@ -534,7 +563,7 @@ const App: React.FC = () => {
         <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-bold">Oyun Qaydaları</h2></div>
         <div className="space-y-3 text-slate-300 text-sm md:text-base">
            <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Oyuna başlamaq üçün qeydiyyatdan keçin.</span></p>
-           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər mövzuda <strong>10 sual</strong> var.</span></p>
+           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər mövzuda <strong>15 sual</strong> var (5 asan, 5 orta, 5 çətin).</span></p>
            <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər düzgün cavab <strong>50 Xal</strong> qazandırır.</span></p>
            <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər sual üçün <strong>30 saniyə</strong> vaxtınız var.</span></p>
            <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>3 Köməkçi vasitə: <strong>50/50</strong>, <strong>Auditoriya</strong> və <strong>Bilgə İnsan (AI)</strong>.</span></p>
@@ -948,7 +977,7 @@ const App: React.FC = () => {
                <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white border border-slate-600"><ArrowLeft size={20}/></button>
                <div className="bg-slate-900/80 px-4 py-2 rounded-full border border-blue-500/30 flex items-center gap-2">
                  <span className="text-blue-300 text-xs font-bold uppercase tracking-wider">Sual</span>
-                 <span className="text-white font-mono font-bold">{currentQuestionIndex + 1}/10</span>
+                 <span className="text-white font-mono font-bold">{currentQuestionIndex + 1}/{questions.length}</span>
                </div>
              </div>
              <div>
@@ -990,12 +1019,12 @@ const App: React.FC = () => {
 
                    return (
                      <button
-                       key={idx}
+                       key={`${currentQuestionIndex}-${idx}`} // Unmount/Remount on question change
                        onClick={() => handleAnswerSelect(idx)}
                        disabled={answerState !== AnswerState.IDLE}
                        className={`
                          relative overflow-hidden group border-2 rounded-xl p-3 md:p-4 text-left transition-all duration-200 shadow-md active:scale-95 flex items-center
-                         ${extraClass || "bg-slate-800/80 border-slate-600 hover:bg-blue-900/60 hover:border-blue-400 text-white"}
+                         ${extraClass || "bg-slate-800/80 border-slate-600 hover:bg-blue-900/60 hover:border-blue-400 text-white focus:outline-none"}
                        `}
                      >
                        <span className="font-bold text-yellow-500 mr-3 text-lg">{['A','B','C','D'][idx]}:</span>
@@ -1005,7 +1034,7 @@ const App: React.FC = () => {
                 })}
              </div>
 
-             {/* Lifelines Bar - Moved up (using mb-10 or just flex layout adjustments) and Enlarged */}
+             {/* Lifelines Bar */}
              <div className="flex gap-6 justify-center w-full mb-6">
                 <button 
                   onClick={useFiftyFifty} 
