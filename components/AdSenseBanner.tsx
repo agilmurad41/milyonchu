@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 
 interface AdSenseBannerProps {
@@ -44,7 +43,7 @@ const AdSenseBanner: React.FC<AdSenseBannerProps> = ({
       <ins
         className="adsbygoogle"
         style={{ display: 'block', width: '100%' }}
-        data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" // BURANI DƏYİŞİN
+        data-ad-client="ca-pub-5785079131592166" 
         data-ad-slot={dataAdSlot}
         data-ad-format={dataAdFormat}
         data-full-width-responsive={dataFullWidthResponsive ? "true" : "false"}

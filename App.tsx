@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { getQuestionsByTopic, TOPICS } from './constants';
 import { GameStatus, AnswerState, Lifelines, AudienceData, User, Question, Topic } from './types';
@@ -603,6 +602,7 @@ const App: React.FC = () => {
           <ul className="list-disc pl-5 space-y-1 text-slate-400">
               <li>Google, reklamları göstərmək üçün çərəzlərdən (cookies) istifadə edir.</li>
               <li>Google-un DART çərəzindən istifadə etməsi, istifadəçilərimizə internetdəki digər saytlara etdikləri ziyarətlərə əsasən reklamlar göstərməyə imkan verir.</li>
+              <li>İstifadəçilər <a href="https://policies.google.com/technologies/ads" target="_blank" className="text-blue-400 underline">Google Reklam və Məzmun Şəbəkəsi Məxfilik Siyasətini</a> ziyarət edərək DART çərəzinin istifadəsindən imtina edə bilərlər.</li>
           </ul>
   
           <h3 className="text-white font-bold text-lg mt-4">3. Məlumatların Təhlükəsizliyi</h3>
@@ -669,7 +669,7 @@ const App: React.FC = () => {
 
     return (
       <div className="flex flex-col h-full w-full relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        {/* Top Right Privacy Button - VISIBLE */}
+        {/* NEW: Top Right Privacy Button - VISIBLE */}
         <div className="absolute top-4 right-4 z-[60]">
             <button onClick={() => setShowPrivacyModal(true)} className="flex items-center justify-center p-2.5 bg-yellow-500/20 rounded-full text-yellow-400 hover:text-white border border-yellow-500 hover:bg-yellow-500 backdrop-blur-md transition-all shadow-lg hover:shadow-yellow-500/40 animate-pulse-slow" title="Məxfilik Siyasəti">
                 <Shield size={22} fill="currentColor" className="text-yellow-500 hover:text-white" />
@@ -732,7 +732,7 @@ const App: React.FC = () => {
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.REGISTER)} className={`${btnBase} bg-fuchsia-900/80 border-fuchsia-500 text-white`}><UserPlus size={20} /> Qeydiyyat</Button>
                    <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> Kömək</Button>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> Reytinq</Button>
-                   {/* Explicit Privacy Button */}
+                   {/* Explicit Privacy Button for AdSense */}
                    <Button fullWidth onClick={() => setShowPrivacyModal(true)} className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> Məxfilik Siyasəti</Button>
                  </>
                ) : (
@@ -752,6 +752,7 @@ const App: React.FC = () => {
             </div>
         </div>
         {showHelp && renderHelpModal()}
+        {showPrivacyModal && renderPrivacyModal()}
       </div>
     );
   };
