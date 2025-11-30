@@ -4,6 +4,7 @@ import { getQuestionsByTopic, TOPICS } from './constants';
 import { GameStatus, AnswerState, Lifelines, AudienceData, User, Question, Topic } from './types';
 import { Button } from './components/Button';
 import { MoneyTree } from './components/MoneyTree';
+import AdSenseBanner from './components/AdSenseBanner';
 import { getAIHint } from './services/geminiService';
 import { dbService } from './services/db';
 import { 
@@ -37,7 +38,9 @@ import {
   Feather,
   Dumbbell,
   User as UserIcon,
-  Home
+  Home,
+  Shield,
+  FileText
 } from 'lucide-react';
 
 // --- ICONS MAPPING ---
@@ -131,6 +134,9 @@ const App: React.FC = () => {
   });
   const [profileSaveStatus, setProfileSaveStatus] = useState<'idle' | 'saved'>('idle');
   const [showProfileModal, setShowProfileModal] = useState(false);
+
+  // Privacy Modal State
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // ADMIN STATE
   const [adminTab, setAdminTab] = useState<'users' | 'questions'>('users');
@@ -345,9 +351,6 @@ const App: React.FC = () => {
     if (window.confirm("Bütün mövcud suallar bazaya yüklənəcək. Davam edilsin?")) {
       const allStaticQuestions: any[] = [];
       TOPICS.forEach(topic => {
-        // This will get the 5/5/5 split logic from constants, effectively seeding 15 qs per topic.
-        // If we want ALL questions from constants, we'd need a different helper, 
-        // but for now this seeds a playable set.
         const qs = getQuestionsByTopic(topic.id, []); 
         qs.forEach(q => {
            allStaticQuestions.push({
@@ -573,6 +576,49 @@ const App: React.FC = () => {
     </div>
   );
 
+  const renderPrivacyModal = () => (
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[70] backdrop-blur-sm animate-fade-in">
+      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-2xl shadow-2xl bg-[#000030] relative max-h-[90vh] overflow-y-auto`}>
+        <button onClick={() => setShowPrivacyModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
+        <div className="flex items-center gap-2 mb-4 text-slate-200 border-b border-slate-700 pb-2">
+          <Shield size={24} className="text-blue-400" />
+          <h2 className="text-xl font-bold">Məxfilik Siyasəti</h2>
+        </div>
+        
+        <div className="space-y-4 text-slate-300 text-sm md:text-base leading-relaxed">
+          <p className="text-xs text-slate-500">Son yenilənmə: 2025</p>
+          
+          <h3 className="text-white font-bold text-lg mt-4">1. Toplanan Məlumatlar</h3>
+          <p>Oyunu oynamaq üçün qeydiyyat zamanı aşağıdakı məlumatlar tələb oluna bilər:</p>
+          <ul className="list-disc pl-5 space-y-1 text-slate-400">
+              <li>İstifadəçi adı (Username)</li>
+              <li>Ad və Soyad</li>
+              <li>Yaş</li>
+              <li>Cins</li>
+          </ul>
+          <p>Bu məlumatlar yalnız oyun daxilində liderlər cədvəlini (Reytinq) yaratmaq və istifadəçi profilini idarə etmək üçün istifadə olunur.</p>
+  
+          <h3 className="text-white font-bold text-lg mt-4">2. Google AdSense və Çərəzlər</h3>
+          <p>Saytımızda reklam xidmətləri göstərmək üçün <strong>Google AdSense</strong> istifadə olunur.</p>
+          <ul className="list-disc pl-5 space-y-1 text-slate-400">
+              <li>Google, reklamları göstərmək üçün çərəzlərdən (cookies) istifadə edir.</li>
+              <li>Google-un DART çərəzindən istifadə etməsi, istifadəçilərimizə internetdəki digər saytlara etdikləri ziyarətlərə əsasən reklamlar göstərməyə imkan verir.</li>
+          </ul>
+  
+          <h3 className="text-white font-bold text-lg mt-4">3. Məlumatların Təhlükəsizliyi</h3>
+          <p>Sizin şəxsi məlumatlarınız üçüncü tərəflərə satılmır və ya ötürülmür. Məlumatlarınız yalnız oyun təcrübəsini təmin etmək üçün saxlanılır.</p>
+          
+          <h3 className="text-white font-bold text-lg mt-4">4. Əlaqə</h3>
+          <p>Hər hansı bir sualınız varsa, bizimlə əlaqə saxlaya bilərsiniz.</p>
+        </div>
+  
+        <div className="mt-6 pt-4 border-t border-slate-700">
+          <Button onClick={() => setShowPrivacyModal(false)} fullWidth className="bg-blue-900/50 border-blue-500/50 hover:bg-blue-800">Bağla</Button>
+        </div>
+      </div>
+    </div>
+  );
+
   const renderProfileModal = () => (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
       <div className="bg-[#000030]/90 p-6 rounded-2xl border border-blue-500/50 shadow-2xl w-full max-w-md backdrop-blur-md relative">
@@ -623,6 +669,13 @@ const App: React.FC = () => {
 
     return (
       <div className="flex flex-col h-full w-full relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden">
+        {/* Top Right Privacy Button - VISIBLE */}
+        <div className="absolute top-4 right-4 z-[60]">
+            <button onClick={() => setShowPrivacyModal(true)} className="flex items-center justify-center p-2.5 bg-yellow-500/20 rounded-full text-yellow-400 hover:text-white border border-yellow-500 hover:bg-yellow-500 backdrop-blur-md transition-all shadow-lg hover:shadow-yellow-500/40 animate-pulse-slow" title="Məxfilik Siyasəti">
+                <Shield size={22} fill="currentColor" className="text-yellow-500 hover:text-white" />
+            </button>
+        </div>
+
         <div className="flex flex-col min-h-full w-full justify-between">
             <div className="flex flex-col items-center w-full">
                 <div className="flex flex-col items-center justify-center pt-16 md:pt-24 shrink-0 relative z-20 px-4">
@@ -679,17 +732,23 @@ const App: React.FC = () => {
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.REGISTER)} className={`${btnBase} bg-fuchsia-900/80 border-fuchsia-500 text-white`}><UserPlus size={20} /> Qeydiyyat</Button>
                    <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> Kömək</Button>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> Reytinq</Button>
+                   {/* Explicit Privacy Button */}
+                   <Button fullWidth onClick={() => setShowPrivacyModal(true)} className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> Məxfilik Siyasəti</Button>
                  </>
                ) : (
                  <>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className={`${btnBase} bg-green-900/80 border-green-500 text-white`}><Play size={22} fill="currentColor" /> Oyuna Başla</Button>
                    {isAdmin && <Button fullWidth onClick={() => setGameStatus(GameStatus.ADMIN_DASHBOARD)} className={`${btnBase} bg-gray-800/80 border-gray-500 text-white`}><Wrench size={20} /> Admin Panel</Button>}
                     <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> Reytinq</Button>
+                   <Button fullWidth onClick={() => setShowPrivacyModal(true)} className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> Məxfilik Siyasəti</Button>
                    <Button fullWidth onClick={handleLogout} className={`${btnBase} bg-red-900/60 border-red-500/80 text-red-100`}><LogOut size={20} /> Çıxış</Button>
                  </>
                )}
                </div>
-               <div className="text-[10px] text-white mt-4 font-mono">© 2025 by Aqil Muradov | Gemini 3</div>
+               
+               <div className="text-[11px] text-blue-200/60 mt-4 font-mono text-center pb-2">
+                  <div>© 2025 by Aqil Muradov | Gemini 3</div>
+               </div>
             </div>
         </div>
         {showHelp && renderHelpModal()}
@@ -718,6 +777,8 @@ const App: React.FC = () => {
           ))}
           {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10">Hələ ki heç kim oynamayıb.</div>}
         </div>
+        {/* AdSense Leaderboard Bottom */}
+        <AdSenseBanner dataAdSlot="1234567890" />
       </div>
     );
   };
@@ -859,7 +920,10 @@ const App: React.FC = () => {
            <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Şifrə</label><input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" placeholder="Password" /></div>
            <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4">{isAuthLoading ? 'Gözləyin...' : 'Daxil ol'}</Button>
          </form>
-         <div className="mt-6 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button></div>
+         <div className="mt-6 flex flex-col gap-2 text-center">
+            <button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button>
+            <button onClick={() => setShowPrivacyModal(true)} className="text-slate-500 hover:text-slate-300 text-xs">Məxfilik Siyasəti</button>
+         </div>
       </div>
     </div>
   );
@@ -906,7 +970,10 @@ const App: React.FC = () => {
                </div>
                <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4 bg-fuchsia-700 hover:bg-fuchsia-600 border-fuchsia-500">{isAuthLoading ? 'Gözləyin...' : 'Qeydiyyatdan keç'}</Button>
              </form>
-             <div className="mt-4 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button></div>
+             <div className="mt-4 flex flex-col gap-2 text-center">
+                <button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button>
+                <button onClick={() => setShowPrivacyModal(true)} className="text-slate-500 hover:text-slate-300 text-xs">Məxfilik Siyasəti</button>
+             </div>
            </>
          ) : (
            <div className="text-center py-8 animate-fade-in">
@@ -962,6 +1029,8 @@ const App: React.FC = () => {
            );
         })}
       </div>
+      {/* AdSense Topic Selection Bottom */}
+      <AdSenseBanner dataAdSlot="1234567890" />
     </div>
   );
 
@@ -1168,6 +1237,8 @@ const App: React.FC = () => {
               <Button onClick={() => setGameStatus(GameStatus.LEADERBOARD)} variant="secondary" fullWidth>Liderlər cədvəli</Button>
            </div>
         </div>
+        {/* AdSense Game Over Screen */}
+        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="rectangle" />
      </div>
   );
 
@@ -1190,6 +1261,7 @@ const App: React.FC = () => {
          {gameStatus === GameStatus.ADMIN_DASHBOARD && renderAdminDashboard()}
          {(gameStatus === GameStatus.WON || gameStatus === GameStatus.LOST) && renderGameOver(gameStatus === GameStatus.WON)}
          {showProfileModal && renderProfileModal()}
+         {showPrivacyModal && renderPrivacyModal()}
       </div>
     </div>
   );

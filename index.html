@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Bilməcə Live</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- GOOGLE ADSENSE SCRIPT -->
+    <!-- AdSense təsdiqləndikdən sonra 'ca-pub-XXXXXXXXXXXXXXXX' hissəsini öz Publisher ID-nizlə əvəz edin -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXXXXXXXX"
+     crossorigin="anonymous"></script>
+
     <style>
       /* Custom animations for game feel */
       @keyframes blink {
@@ -18,20 +24,94 @@
         50% { background-color: #4ade80; border-color: #86efac; box-shadow: 0 0 25px #4ade80; color: black; } 
       }
 
-      .animate-blink {
-        animation: blink 1s infinite;
-      }
-      .animate-flash-green {
-        animation: flash-green 0.3s linear infinite; /* Faster blink */
-      }
-      
       /* Pulse slow for logo */
       @keyframes pulse-slow {
         0%, 100% { transform: scale(1); }
         50% { transform: scale(1.02); }
       }
-      .animate-pulse-slow {
-        animation: pulse-slow 3s infinite;
+
+      /* NEW ANIMATIONS - UPDATED & STRONGER */
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      
+      @keyframes slideInUp {
+        from { opacity: 0; transform: translateY(100%); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes slideInRight {
+        from { opacity: 0; transform: translateX(50px); }
+        to { opacity: 1; transform: translateX(0); }
+      }
+
+      @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+      }
+      
+      @keyframes zoomIn {
+        0% { opacity: 0; transform: scale(0.5); }
+        100% { opacity: 1; transform: scale(1); }
+      }
+
+      @keyframes bounceIn {
+        0% { opacity: 0; transform: scale(0.3); }
+        50% { opacity: 1; transform: scale(1.05); }
+        70% { transform: scale(0.9); }
+        100% { transform: scale(1); }
+      }
+
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+        20%, 40%, 60%, 80% { transform: translateX(5px); }
+      }
+
+      @keyframes float {
+        0% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+        33% { transform: translateY(-30px) translateX(15px) rotate(5deg); }
+        66% { transform: translateY(-10px) translateX(-15px) rotate(-5deg); }
+        100% { transform: translateY(0px) translateX(0px) rotate(0deg); }
+      }
+      
+      @keyframes confetti-fall {
+        0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      }
+
+      /* Utility Classes with Fill Mode */
+      .animate-blink { animation: blink 1s infinite; }
+      .animate-flash-green { animation: flash-green 0.3s linear infinite; }
+      .animate-pulse-slow { animation: pulse-slow 3s infinite; }
+      .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+      .animate-fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+      .animate-slide-in-up { animation: slideInUp 0.5s ease-out forwards; }
+      .animate-slide-in-right { animation: slideInRight 0.5s ease-out forwards; }
+      .animate-scale-in { animation: scaleIn 0.4s ease-out forwards; }
+      .animate-zoom-in { animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+      .animate-bounce-in { animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55) forwards; }
+      .animate-shake { animation: shake 0.5s ease-in-out; }
+      .animate-float { animation: float 12s ease-in-out infinite; }
+      
+      /* Particles Styles */
+      .particle {
+        position: absolute;
+        border-radius: 50%;
+        opacity: 0.6;
+        pointer-events: none;
+      }
+      
+      /* Confetti */
+      .confetti {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #f00;
+        animation: confetti-fall 3s linear forwards;
       }
       
       body {
