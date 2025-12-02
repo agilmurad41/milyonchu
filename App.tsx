@@ -1,10 +1,8 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { getQuestionsByTopic, TOPICS } from './constants';
 import { GameStatus, AnswerState, Lifelines, AudienceData, User, Question, Topic } from './types';
 import { Button } from './components/Button';
 import { MoneyTree } from './components/MoneyTree';
-import AdSenseBanner from './components/AdSenseBanner';
 import { getAIHint } from './services/geminiService';
 import { dbService } from './services/db';
 import { 
@@ -56,23 +54,23 @@ const TRANSLATIONS = {
   az: {
     slogan1: "Bilgi gücdür,",
     slogan2: "Bilməcə Live isə meydan!",
-    highScore: "Rekord Xal",
-    players: "Oyunçu Sayı",
+    highScore: "Rekord xal",
+    players: "Oyunçu sayı",
     welcome: "Xoş gəldin",
     login: "Daxil ol",
     register: "Qeydiyyat",
     help: "Kömək",
-    about: "Oyun Haqqında",
-    aboutTitle: "Oyun Haqqında",
-    leaderboard: "Reytinq",
-    privacy: "Məxfilik Siyasəti",
-    privacyTitle: "Məxfilik Siyasəti",
-    startGame: "Oyuna Başla",
-    adminPanel: "Admin Panel",
+    about: "Oyun haqqında",
+    aboutTitle: "Oyun qaqqında",
+    leaderboard: "Liderlər cədvəli",
+    privacy: "Məxfilik siyasəti",
+    privacyTitle: "Məxfilik siyasəti",
+    startGame: "Oyuna başla",
+    adminPanel: "Admin panel",
     logout: "Çıxış",
     username: "İstifadəçi adı",
     password: "Şifrə",
-    nameSurname: "Ad Soyad",
+    nameSurname: "Ad və soyad",
     age: "Yaş",
     gender: "Cins",
     male: "Kişi",
@@ -83,14 +81,14 @@ const TRANSLATIONS = {
     back: "Geri qayıt",
     loginTitle: "Giriş",
     registerTitle: "Qeydiyyat",
-    registerSuccess: "Uğurlu Qeydiyyat!",
+    registerSuccess: "Uğurlu qeydiyyat!",
     registerSuccessDesc: "Hesabınız yaradıldı. İndi giriş edə bilərsiniz.",
     continue: "Davam et",
     loading: "Gözləyin...",
     minChars: "Minimum 3 simvol",
     usernameTaken: "Bu istifadəçi adı artıq mövcuddur.",
     passwordHint: "5-10 simvol arası olmalıdır",
-    topicSelection: "Mövzu Seçimi",
+    topicSelection: "Mövzu seçimi",
     question: "Sual",
     lifeline5050: "50/50",
     lifelineAudience: "Auditoriya",
@@ -102,36 +100,34 @@ const TRANSLATIONS = {
     amazingWin: "Möhtəşəm! Bütün suallara düzgün cavab verdiniz.",
     timeUp: "Vaxtınız bitdi.",
     wrongAnswer: "Təəssüf ki, cavab yanlışdır.",
-    scoreEarned: "Qazanılan Xal",
+    scoreEarned: "Qazanılan xal",
     chooseOtherTopic: "Digər mövzu seç",
-    leaderboardTitle: "Liderlər Cədvəli",
+    leaderboardTitle: "Liderlər cədvəli",
     noPlayers: "Hələ ki heç kim oynamayıb.",
     profile: "Profil",
-    gamesPlayed: "Oynanılan Oyunlar",
-    totalPoints: "Toplam Xal",
+    gamesPlayed: "Oynanılan oyunlar",
+    totalPoints: "Toplam xal",
     userExists: "Bu istifadəçi adı artıq mövcuddur.",
     fillAllFields: "Bütün sahələri doldurun.",
     aboutContent: "Bilməcə Live — Azərbaycan dilində onlayn intellektual viktorina oyunudur. Tarix, Coğrafiya, İncəsənət və digər mövzularda sualları cavablandırın, xal toplayın və liderlər siyahısında yüksəlin.",
     privacyContent: {
        updated: "Son yenilənmə: 01 Mart 2025",
        intro: "\"Bilməcə Live\" tətbiqi istifadəçilərin məxfiliyinə hörmət edir.",
-       collected: "Toplanan Məlumatlar",
+       collected: "Toplanan məlumatlar",
        collectedList: [
            "İstifadəçi adı, ad, yaş və cins (oyun təcrübəsi üçün).",
            "Oyun statistikası və xallar.",
            "Texniki cihaz məlumatları (təhlükəsizlik üçün)."
        ],
-       ads: "Reklamlar",
-       adsText: "Google AdSense vasitəsilə reklamlar göstərilir. Google çərəzlərdən istifadə edə bilər.",
        contact: "Əlaqə"
     },
-    rulesTitle: "Oyun Qaydaları",
+    rulesTitle: "Oyun qaydaları",
     rules: [
         "Oyuna başlamaq üçün qeydiyyatdan keçin.",
         "Hər mövzuda 15 sual var (5 asan, 5 orta, 5 çətin).",
         "Hər düzgün cavab 50 Xal qazandırır.",
         "Hər sual üçün 30 saniyə vaxtınız var.",
-        "3 Köməkçi vasitə: 50/50, Auditoriya və Bilgə İnsan (AI)."
+        "3 köməkçi vasitə: 50/50, Auditoriya və Bilgə İnsan (AI)."
     ],
     understood: "Aydındır",
     close: "Bağla",
@@ -205,8 +201,6 @@ const TRANSLATIONS = {
            "Game statistics and scores.",
            "Technical device information (for security)."
        ],
-       ads: "Ads",
-       adsText: "Ads are served via Google AdSense. Google may use cookies.",
        contact: "Contact"
     },
     rulesTitle: "Game Rules",
@@ -803,9 +797,7 @@ const App: React.FC = () => {
             <ul className="list-disc pl-5">
                 {t.privacyContent.collectedList.map((item, i) => <li key={i}>{item}</li>)}
             </ul>
-            <h3 className="text-white font-bold">{t.privacyContent.ads}</h3>
-            <p>{t.privacyContent.adsText}</p>
-            <h3 className="text-white font-bold">{t.privacyContent.contact}</h3>
+            <h3 className="text-white font-bold mt-4">{t.privacyContent.contact}</h3>
             <p>support@bilmecelive.com</p>
         </div>
 
@@ -992,8 +984,6 @@ const App: React.FC = () => {
           ))}
           {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10">{t.noPlayers}</div>}
         </div>
-        {/* AdSense Leaderboard Bottom */}
-        <AdSenseBanner dataAdSlot="1234567890" className="shrink-0" />
       </div>
     );
   };
@@ -1246,8 +1236,6 @@ const App: React.FC = () => {
            );
         })}
       </div>
-      {/* AdSense Topic Selection Bottom */}
-      <AdSenseBanner dataAdSlot="1234567890" className="shrink-0" />
     </div>
   );
 
@@ -1454,8 +1442,6 @@ const App: React.FC = () => {
               <Button onClick={() => setGameStatus(GameStatus.LEADERBOARD)} variant="secondary" fullWidth>{t.leaderboardTitle}</Button>
            </div>
         </div>
-        {/* AdSense Game Over Screen */}
-        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="rectangle" />
      </div>
   );
 
