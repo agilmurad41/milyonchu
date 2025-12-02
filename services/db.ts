@@ -15,11 +15,7 @@ import {
 import { User, Question, Topic } from "../types";
 
 // --- KONFİQURASİYA ---
-// 1. Firebase Konsolundan aldığın "firebaseConfig" obyektini aşağıya yapışdır.
-// 2. USE_CLOUD_DB = true et.
-
 const firebaseConfig: any = {
-  // Bura öz API açarlarını yazmalısan:
  apiKey: "AIzaSyDjtML91jvDUait-CdCIRli7UUMupm3V18",
  authDomain: "bilmece-live.firebaseapp.com",
  projectId: "bilmece-live",
@@ -28,10 +24,7 @@ const firebaseConfig: any = {
  appId: "1:23811133406:web:1aed708a82bc4444a1d74f"
 };
 
-// Əgər Firebase işə salmaq istəyirsənsə bunu true et!
 const USE_CLOUD_DB = true; 
-
-// ---------------------
 
 let db: any;
 let usersCollection: any;
@@ -49,7 +42,6 @@ if (USE_CLOUD_DB && firebaseConfig.apiKey) {
   }
 }
 
-// LOCAL STORAGE FALLBACK KEY
 const LOCAL_KEY = 'milyoncu_users_db';
 
 export const dbService = {
@@ -132,14 +124,18 @@ export const dbService = {
 
   // --- QUESTIONS (Firebase Only) ---
 
-  // Mövzuya uyğun sualları gətir
-  getQuestions: async (topic?: Topic): Promise<Question[]> => {
+  // Updated to support Language filtering
+  getQuestions: async (topic?: Topic, language: 'az' | 'en' = 'az'): Promise<Question[]> => {
     if (USE_CLOUD_DB && db) {
       try {
-        let q = questionsCollection;
+        let q = query(questionsCollection, where("language", "==", language));
+        
         if (topic) {
-          q = query(questionsCollection, where("topic", "==", topic));
+          // Compound query: topic + language
+          // Note: Requires Firestore index, but usually works for small datasets or dev mode
+          q = query(questionsCollection, where("topic", "==", topic), where("language", "==", language));
         }
+        
         const snapshot = await getDocs(q);
         const questions: Question[] = [];
         snapshot.forEach((doc: any) => {
@@ -151,10 +147,9 @@ export const dbService = {
         return [];
       }
     }
-    return []; // Local storage sual dəstəkləmir (static fayldan istifadə edilir)
+    return [];
   },
 
-  // Sual əlavə et
   addQuestion: async (question: Omit<Question, 'id'>): Promise<boolean> => {
     if (USE_CLOUD_DB && db) {
       try {
@@ -168,7 +163,6 @@ export const dbService = {
     return false;
   },
 
-  // Sualı yenilə
   updateQuestion: async (id: string, updates: Partial<Question>): Promise<boolean> => {
     if (USE_CLOUD_DB && db) {
       try {
@@ -183,7 +177,6 @@ export const dbService = {
     return false;
   },
 
-  // Sualı sil
   deleteQuestion: async (id: string): Promise<boolean> => {
     if (USE_CLOUD_DB && db) {
       try {
@@ -197,7 +190,6 @@ export const dbService = {
     return false;
   },
 
-  // Toplu sual yükləmə (Seeding)
   seedQuestions: async (questions: any[]): Promise<void> => {
     if (USE_CLOUD_DB && db) {
       console.log("Suallar bazaya yüklənir...");

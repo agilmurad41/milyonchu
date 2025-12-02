@@ -6,6 +6,7 @@ export interface Question {
   correctAnswerIndex: number; // 0-3
   topic?: string; // For DB storage
   difficulty?: 'easy' | 'medium' | 'hard'; // For DB storage
+  language?: 'az' | 'en'; // Language support
 }
 
 export enum GameStatus {
@@ -58,10 +59,10 @@ export type Topic = 'COGRAFIYA' | 'TARIX' | 'INCESENET' | 'DIN' | 'FANTASTIK' | 
 
 export interface TopicInfo {
   id: Topic;
-  label: string;
+  label: { az: string, en: string }; // Localized label
   icon: string; // Icon name or component identifier
-  description: string;
-  color: string; // Tailwind color name (e.g., 'blue', 'red')
+  description: { az: string, en: string }; // Localized description
+  color: string; // Tailwind color name
 }
 
 export interface ImageCache {
