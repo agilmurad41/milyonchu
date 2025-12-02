@@ -40,7 +40,8 @@ import {
   User as UserIcon,
   Home,
   Shield,
-  FileText
+  FileText,
+  Info
 } from 'lucide-react';
 
 // --- ICONS MAPPING ---
@@ -48,23 +49,194 @@ const ICON_MAP: Record<string, React.ElementType> = {
   Globe, BookOpen, Palette, Moon, Rocket, Clapperboard, Trophy, Cpu, Feather, Dumbbell
 };
 
+// --- TRANSLATIONS ---
+type Language = 'az' | 'en';
+
+const TRANSLATIONS = {
+  az: {
+    slogan1: "Bilgi gücdür,",
+    slogan2: "Bilməcə Live isə meydan!",
+    highScore: "Rekord xal",
+    players: "Oyunçu sayı",
+    welcome: "Xoş gəldin",
+    login: "Daxil ol",
+    register: "Qeydiyyat",
+    help: "Kömək",
+    about: "Oyun haqqında",
+    aboutTitle: "Oyun qaqqında",
+    leaderboard: "Liderlər cədvəli",
+    privacy: "Məxfilik siyasəti",
+    privacyTitle: "Məxfilik siyasəti",
+    startGame: "Oyuna başla",
+    adminPanel: "Admin panel",
+    logout: "Çıxış",
+    username: "İstifadəçi adı",
+    password: "Şifrə",
+    nameSurname: "Ad və soyad",
+    age: "Yaş",
+    gender: "Cins",
+    male: "Kişi",
+    female: "Qadın",
+    select: "Seçin",
+    save: "Yadda saxla",
+    saved: "Yadda saxlanıldı!",
+    back: "Geri qayıt",
+    loginTitle: "Giriş",
+    registerTitle: "Qeydiyyat",
+    registerSuccess: "Uğurlu qeydiyyat!",
+    registerSuccessDesc: "Hesabınız yaradıldı. İndi giriş edə bilərsiniz.",
+    continue: "Davam et",
+    loading: "Gözləyin...",
+    minChars: "Minimum 3 simvol",
+    usernameTaken: "Bu istifadəçi adı artıq mövcuddur.",
+    passwordHint: "5-10 simvol arası olmalıdır",
+    topicSelection: "Mövzu seçimi",
+    question: "Sual",
+    lifeline5050: "50/50",
+    lifelineAudience: "Auditoriya",
+    lifelineAI: "Bilgə İnsan",
+    aiSays: "Bilgə İnsan deyir:",
+    thanks: "Təşəkkürlər",
+    congrats: "Təbriklər!",
+    youLost: "Məğlub oldunuz",
+    amazingWin: "Möhtəşəm! Bütün suallara düzgün cavab verdiniz.",
+    timeUp: "Vaxtınız bitdi.",
+    wrongAnswer: "Təəssüf ki, cavab yanlışdır.",
+    scoreEarned: "Qazanılan xal",
+    chooseOtherTopic: "Digər mövzu seç",
+    leaderboardTitle: "Liderlər cədvəli",
+    noPlayers: "Hələ ki heç kim oynamayıb.",
+    profile: "Profil",
+    gamesPlayed: "Oynanılan oyunlar",
+    totalPoints: "Toplam xal",
+    userExists: "Bu istifadəçi adı artıq mövcuddur.",
+    fillAllFields: "Bütün sahələri doldurun.",
+    aboutContent: "Bilməcə Live — Azərbaycan dilində onlayn intellektual viktorina oyunudur. Tarix, Coğrafiya, İncəsənət və digər mövzularda sualları cavablandırın, xal toplayın və liderlər siyahısında yüksəlin.",
+    privacyContent: {
+       updated: "Son yenilənmə: 01 Mart 2025",
+       intro: "\"Bilməcə Live\" tətbiqi istifadəçilərin məxfiliyinə hörmət edir.",
+       collected: "Toplanan məlumatlar",
+       collectedList: [
+           "İstifadəçi adı, ad, yaş və cins (oyun təcrübəsi üçün).",
+           "Oyun statistikası və xallar.",
+           "Texniki cihaz məlumatları (təhlükəsizlik üçün)."
+       ],
+       contact: "Əlaqə"
+    },
+    rulesTitle: "Oyun qaydaları",
+    rules: [
+        "Oyuna başlamaq üçün qeydiyyatdan keçin.",
+        "Hər mövzuda 15 sual var (5 asan, 5 orta, 5 çətin).",
+        "Hər düzgün cavab 50 Xal qazandırır.",
+        "Hər sual üçün 30 saniyə vaxtınız var.",
+        "3 köməkçi vasitə: 50/50, Auditoriya və Bilgə İnsan (AI)."
+    ],
+    understood: "Aydındır",
+    close: "Bağla",
+    usernameImmutable: "İstifadəçi adı (dəyişdirilə bilməz)"
+  },
+  en: {
+    slogan1: "Knowledge is power,",
+    slogan2: "Bilməcə Live is the arena!",
+    highScore: "High Score",
+    players: "Players",
+    welcome: "Welcome",
+    login: "Login",
+    register: "Register",
+    help: "Help",
+    about: "About Game",
+    aboutTitle: "About Game",
+    leaderboard: "Leaderboard",
+    privacy: "Privacy Policy",
+    privacyTitle: "Privacy Policy",
+    startGame: "Start Game",
+    adminPanel: "Admin Panel",
+    logout: "Logout",
+    username: "Username",
+    password: "Password",
+    nameSurname: "Full Name",
+    age: "Age",
+    gender: "Gender",
+    male: "Male",
+    female: "Female",
+    select: "Select",
+    save: "Save",
+    saved: "Saved!",
+    back: "Go Back",
+    loginTitle: "Login",
+    registerTitle: "Register",
+    registerSuccess: "Registration Successful!",
+    registerSuccessDesc: "Your account has been created. You can now login.",
+    continue: "Continue",
+    loading: "Please wait...",
+    minChars: "Minimum 3 characters",
+    usernameTaken: "Username is already taken.",
+    passwordHint: "Must be 5-10 characters",
+    topicSelection: "Select Topic",
+    question: "Question",
+    lifeline5050: "50/50",
+    lifelineAudience: "Audience",
+    lifelineAI: "Wise AI",
+    aiSays: "Wise AI says:",
+    thanks: "Thanks",
+    congrats: "Congratulations!",
+    youLost: "Game Over",
+    amazingWin: "Amazing! You answered all questions correctly.",
+    timeUp: "Time is up.",
+    wrongAnswer: "Unfortunately, the answer is wrong.",
+    scoreEarned: "Score Earned",
+    chooseOtherTopic: "Choose another topic",
+    leaderboardTitle: "Leaderboard",
+    noPlayers: "No players yet.",
+    profile: "Profile",
+    gamesPlayed: "Games Played",
+    totalPoints: "Total Points",
+    userExists: "Username already exists.",
+    fillAllFields: "Please fill all fields.",
+    aboutContent: "Bilməcə Live is an online trivia game. Test your knowledge in History, Geography, Art, and more. Compete with players, earn points, and climb the leaderboard.",
+    privacyContent: {
+       updated: "Last updated: March 01, 2025",
+       intro: "\"Bilməcə Live\" respects user privacy.",
+       collected: "Collected Information",
+       collectedList: [
+           "Username, name, age, and gender (for game experience).",
+           "Game statistics and scores.",
+           "Technical device information (for security)."
+       ],
+       contact: "Contact"
+    },
+    rulesTitle: "Game Rules",
+    rules: [
+        "Register to start playing.",
+        "Each topic has 15 questions (5 easy, 5 medium, 5 hard).",
+        "Each correct answer gives 50 Points.",
+        "You have 30 seconds for each question.",
+        "3 Lifelines: 50/50, Audience, and Wise AI."
+    ],
+    understood: "Got it",
+    close: "Close",
+    usernameImmutable: "Username (cannot be changed)"
+  }
+};
+
 // Custom Logo Component
 const GameLogo = ({ size = 'normal' }: { size?: 'normal' | 'large' | 'xl' }) => {
   // Dynamic Sizes
   let containerSize = 'w-24 h-24';
-  let titleSize = 'text-xs';
-  let subSize = 'text-[10px]';
+  let titleSize = 'text-base';
+  let subSize = 'text-xs';
   let iconSize = 24;
 
   if (size === 'large') {
     containerSize = 'w-36 h-36';
-    titleSize = 'text-xl';
-    subSize = 'text-xs';
+    titleSize = 'text-2xl';
+    subSize = 'text-sm';
     iconSize = 40;
   } else if (size === 'xl') {
     containerSize = 'w-52 h-52 md:w-60 md:h-60';
-    titleSize = 'text-2xl md:text-3xl';
-    subSize = 'text-xs md:text-lg';
+    // Increased font sizes for the new layout without top/bottom text
+    titleSize = 'text-4xl md:text-5xl';
+    subSize = 'text-lg md:text-xl';
     iconSize = 48;
   }
 
@@ -73,9 +245,14 @@ const GameLogo = ({ size = 'normal' }: { size?: 'normal' | 'large' | 'xl' }) => 
        <div className="absolute inset-1 rounded-full border border-yellow-600/50"></div>
        <div className="absolute inset-3 rounded-full border border-blue-400/30"></div>
        
-       <div className="text-yellow-500 font-bold tracking-[0.2em] mb-1 drop-shadow-md uppercase text-[8px] md:text-[10px] z-10">Azərbaycan</div>
-       <div className={`text-white font-extrabold ${titleSize} leading-none tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase font-serif z-10`}>BİLMƏCƏ<br/>LIVE</div>
-       <div className={`text-yellow-400 font-bold ${subSize} mt-1 z-10`}>2026</div>
+       <div className="flex flex-col items-center justify-center z-10">
+         <div className={`text-white font-black tracking-tighter leading-none drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] ${titleSize}`} style={{ textShadow: "0 0 15px rgba(59, 130, 246, 0.6)" }}>
+            BİLMƏCƏ
+         </div>
+         <div className={`text-yellow-400 font-black tracking-[0.25em] leading-none mt-1 md:mt-2 drop-shadow-md ${subSize}`}>
+            LIVE
+         </div>
+       </div>
        
        <div className="absolute -bottom-5 text-yellow-500 animate-spin-slow opacity-100 filter drop-shadow-[0_0_15px_rgba(234,179,8,1)] z-20 bg-[#000040] rounded-full p-1.5 border-2 border-yellow-500">
          <Gem size={iconSize} />
@@ -86,6 +263,7 @@ const GameLogo = ({ size = 'normal' }: { size?: 'normal' | 'large' | 'xl' }) => 
 
 const App: React.FC = () => {
   // --- STATE ---
+  const [language, setLanguage] = useState<Language>('az'); // Default Language
   const [gameStatus, setGameStatus] = useState<GameStatus>(GameStatus.AUTH_CHOICE);
   const [previousStatus, setPreviousStatus] = useState<GameStatus | null>(null);
   
@@ -159,11 +337,21 @@ const App: React.FC = () => {
     optionD: '',
     correctAnswerIndex: 0,
     topic: 'COGRAFIYA' as Topic,
-    difficulty: 'easy' as 'easy' | 'medium' | 'hard'
+    difficulty: 'easy' as 'easy' | 'medium' | 'hard',
+    language: 'az' as 'az' | 'en'
   });
 
   // Help Modal State
   const [showHelp, setShowHelp] = useState(false);
+  
+  // Privacy Modal State
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  
+  // About Game Modal State
+  const [showAboutModal, setShowAboutModal] = useState(false);
+
+  // Helper for current translations
+  const t = TRANSLATIONS[language];
 
   // Load users on mount and when needed
   const refreshLeaderboard = async () => {
@@ -227,12 +415,12 @@ const App: React.FC = () => {
     e.preventDefault();
     setAuthError(null);
     setIsAuthLoading(true);
-    if (!authForm.username.trim() || authForm.username.length < 3) { setAuthError("İstifadəçi adı ən az 3 simvol olmalıdır."); setIsAuthLoading(false); return; }
-    if (usernameStatus === 'taken') { setAuthError("Bu istifadəçi adı artıq mövcuddur."); setIsAuthLoading(false); return; }
-    if (authForm.password.length < 5 || authForm.password.length > 10) { setAuthError("Şifrə 5 ilə 10 simvol arasında olmalıdır."); setIsAuthLoading(false); return; }
-    if (!authForm.name.trim()) { setAuthError("Ad daxil edilməlidir."); setIsAuthLoading(false); return; }
-    if (!authForm.age.trim()) { setAuthError("Yaş daxil edilməlidir."); setIsAuthLoading(false); return; }
-    if (!authForm.gender) { setAuthError("Cins seçilməlidir."); setIsAuthLoading(false); return; }
+    if (!authForm.username.trim() || authForm.username.length < 3) { setAuthError(t.minChars); setIsAuthLoading(false); return; }
+    if (usernameStatus === 'taken') { setAuthError(t.usernameTaken); setIsAuthLoading(false); return; }
+    if (authForm.password.length < 5 || authForm.password.length > 10) { setAuthError(t.passwordHint); setIsAuthLoading(false); return; }
+    if (!authForm.name.trim()) { setAuthError(t.fillAllFields); setIsAuthLoading(false); return; }
+    if (!authForm.age.trim()) { setAuthError(t.fillAllFields); setIsAuthLoading(false); return; }
+    if (!authForm.gender) { setAuthError(t.fillAllFields); setIsAuthLoading(false); return; }
 
     const newUser: User = { username: authForm.username, password: authForm.password, name: authForm.name, age: authForm.age, gender: authForm.gender, totalPoints: 0, completedTopics: [], gamesPlayed: 0, seenQuestions: [] };
     const success = await dbService.addUser(newUser);
@@ -242,7 +430,7 @@ const App: React.FC = () => {
         setRegistrationSuccess(true); 
         refreshLeaderboard(); 
     } 
-    else { setAuthError("Qeydiyyat xətası baş verdi."); }
+    else { setAuthError("Error"); }
     setIsAuthLoading(false);
   };
 
@@ -264,7 +452,7 @@ const App: React.FC = () => {
       localStorage.setItem('bilmece_user_session', JSON.stringify(foundUser));
       setGameStatus(GameStatus.AUTH_CHOICE);
       setAuthForm({ username: '', password: '', name: '', age: '', gender: '' });
-    } else { setAuthError("İstifadəçi adı və ya şifrə yanlışdır."); }
+    } else { setAuthError("Error"); }
     setIsAuthLoading(false);
   };
 
@@ -348,14 +536,16 @@ const App: React.FC = () => {
     if (window.confirm("Bütün mövcud suallar bazaya yüklənəcək. Davam edilsin?")) {
       const allStaticQuestions: any[] = [];
       TOPICS.forEach(topic => {
-        const qs = getQuestionsByTopic(topic.id, []); 
+        // Seed default AZ questions
+        const qs = getQuestionsByTopic(topic.id, [], 'az'); 
         qs.forEach(q => {
            allStaticQuestions.push({
              text: q.text,
              options: q.options,
              correctAnswerIndex: q.correctAnswerIndex,
              topic: topic.id,
-             difficulty: q.difficulty || 'medium'
+             difficulty: q.difficulty || 'medium',
+             language: 'az'
            });
         });
       });
@@ -372,7 +562,8 @@ const App: React.FC = () => {
       options: [questionForm.optionA, questionForm.optionB, questionForm.optionC, questionForm.optionD],
       correctAnswerIndex: Number(questionForm.correctAnswerIndex),
       topic: questionForm.topic,
-      difficulty: questionForm.difficulty
+      difficulty: questionForm.difficulty,
+      language: questionForm.language
     };
 
     if (questionToEdit) {
@@ -400,11 +591,12 @@ const App: React.FC = () => {
         optionA: q.options[0], optionB: q.options[1], optionC: q.options[2], optionD: q.options[3],
         correctAnswerIndex: q.correctAnswerIndex,
         topic: (q.topic as Topic) || 'COGRAFIYA',
-        difficulty: (q.difficulty as any) || 'medium'
+        difficulty: (q.difficulty as any) || 'medium',
+        language: (q.language as any) || 'az'
       });
     } else {
       setQuestionToEdit(null);
-      setQuestionForm({ text: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswerIndex: 0, topic: 'COGRAFIYA', difficulty: 'easy' });
+      setQuestionForm({ text: '', optionA: '', optionB: '', optionC: '', optionD: '', correctAnswerIndex: 0, topic: 'COGRAFIYA', difficulty: 'easy', language: 'az' });
     }
     setIsAddingQuestion(true);
   };
@@ -431,8 +623,8 @@ const App: React.FC = () => {
   };
 
   const startGameWithTopic = async (topic: Topic) => {
-    // 1. Try to get questions from DB first (Cloud)
-    let rawQuestions = await dbService.getQuestions(topic);
+    // 1. Try to get questions from DB first (Cloud) matching current language
+    let rawQuestions = await dbService.getQuestions(topic, language);
     let gameQuestions: Question[] = [];
     
     // Helper shuffle function
@@ -460,11 +652,12 @@ const App: React.FC = () => {
     } else {
        console.log("DB boşdur, lokal suallardan istifadə edilir.");
        // Fallback to local constants which already implements the 5/5/5 logic
-       gameQuestions = getQuestionsByTopic(topic, currentUser?.seenQuestions || []);
+       // IMPORTANT: Pass current language to local getter
+       gameQuestions = getQuestionsByTopic(topic, currentUser?.seenQuestions || [], language);
     }
 
     if (gameQuestions.length === 0) {
-      alert("Bu mövzuda sual tapılmadı.");
+      alert(language === 'az' ? "Bu mövzuda sual tapılmadı." : "No questions found for this topic.");
       return;
     }
 
@@ -560,15 +753,65 @@ const App: React.FC = () => {
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
       <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030] relative`}>
         <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
-        <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-bold">Oyun Qaydaları</h2></div>
-        <div className="space-y-3 text-slate-300 text-sm md:text-base">
-           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Oyuna başlamaq üçün qeydiyyatdan keçin.</span></p>
-           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər mövzuda <strong>15 sual</strong> var (5 asan, 5 orta, 5 çətin).</span></p>
-           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər düzgün cavab <strong>50 Xal</strong> qazandırır.</span></p>
-           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>Hər sual üçün <strong>30 saniyə</strong> vaxtınız var.</span></p>
-           <p className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>3 Köməkçi vasitə: <strong>50/50</strong>, <strong>Auditoriya</strong> və <strong>Bilgə İnsan (AI)</strong>.</span></p>
+        <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-black">{t.rulesTitle}</h2></div>
+        <div className="space-y-3 text-slate-300 text-sm md:text-base font-medium">
+           {t.rules.map((rule, idx) => (
+             <p key={idx} className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>{rule}</span></p>
+           ))}
         </div>
-        <Button onClick={() => setShowHelp(false)} fullWidth className="mt-6 bg-teal-700 hover:bg-teal-600 border-teal-500">Aydındır</Button>
+        <Button onClick={() => setShowHelp(false)} fullWidth className="mt-6 bg-teal-700 hover:bg-teal-600 border-teal-500">{t.understood}</Button>
+      </div>
+    </div>
+  );
+  
+  const renderAboutModal = () => (
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[70] backdrop-blur-sm animate-fade-in">
+      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-lg shadow-2xl bg-[#000030] relative overflow-y-auto max-h-[90vh]`}>
+        <button onClick={() => setShowAboutModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
+        <div className="flex items-center gap-2 mb-4 text-slate-200 border-b border-slate-700 pb-2">
+          <Info size={24} className="text-blue-400" />
+          <h2 className="text-xl font-black">{t.aboutTitle}</h2>
+        </div>
+        
+        <div className="space-y-6">
+            <div className="p-4 bg-slate-900/60 rounded-xl border border-blue-500/20">
+                <h3 className="text-blue-300 font-bold text-base mb-2">Bilməcə Live</h3>
+                <p className="text-slate-300 text-sm leading-relaxed font-medium">
+                    {t.aboutContent}
+                </p>
+            </div>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-slate-700">
+          <Button onClick={() => setShowAboutModal(false)} fullWidth className="bg-blue-900/50 border-blue-500/50 hover:bg-blue-800">{t.close}</Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderPrivacyModal = () => (
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[80] backdrop-blur-sm animate-fade-in">
+      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-2xl shadow-2xl bg-[#000030] relative overflow-y-auto max-h-[90vh]`}>
+        <button onClick={() => setShowPrivacyModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
+        <div className="flex items-center gap-2 mb-4 text-slate-200 border-b border-slate-700 pb-2">
+          <Shield size={24} className="text-blue-400" />
+          <h2 className="text-xl font-black">{t.privacyTitle}</h2>
+        </div>
+        
+        <div className="space-y-4 text-slate-300 text-sm leading-relaxed font-medium">
+            <p><strong>{t.privacyContent.updated}</strong></p>
+            <p>{t.privacyContent.intro}</p>
+            <h3 className="text-white font-bold">{t.privacyContent.collected}</h3>
+            <ul className="list-disc pl-5">
+                {t.privacyContent.collectedList.map((item, i) => <li key={i}>{item}</li>)}
+            </ul>
+            <h3 className="text-white font-bold mt-4">{t.privacyContent.contact}</h3>
+            <p>support@bilmecelive.com</p>
+        </div>
+
+        <div className="mt-6 pt-4 border-t border-slate-700">
+          <Button onClick={() => setShowPrivacyModal(false)} fullWidth className="bg-blue-900/50 border-blue-500/50 hover:bg-blue-800">{t.close}</Button>
+        </div>
       </div>
     </div>
   );
@@ -577,35 +820,35 @@ const App: React.FC = () => {
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
       <div className="bg-[#000030]/90 p-6 rounded-2xl border border-blue-500/50 shadow-2xl w-full max-w-md backdrop-blur-md relative">
          <button onClick={() => setShowProfileModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24}/></button>
-         <h2 className="text-xl font-bold text-white mb-6">Profil</h2>
+         <h2 className="text-xl font-black text-white mb-6">{t.profile}</h2>
          {currentUser && (
            <form onSubmit={handleProfileUpdate} className="space-y-4">
                <div>
-                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">İstifadəçi adı</label>
-                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed" />
+                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.usernameImmutable}</label>
+                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed font-medium" />
                </div>
                <div>
-                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Ad Soyad</label>
-                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.nameSurname}</label>
+                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                </div>
                <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Yaş</label>
-                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.age}</label>
+                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                   </div>
                   <div className="flex-1">
-                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Cins</label>
-                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors">
-                      <option value="Kişi">Kişi</option>
-                      <option value="Qadın">Qadın</option>
+                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.gender}</label>
+                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium">
+                      <option value="Kişi">{t.male}</option>
+                      <option value="Qadın">{t.female}</option>
                     </select>
                   </div>
                </div>
                <div className="pt-2">
-                 <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Toplam Xal:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
-                 <div className="flex justify-between text-sm text-slate-400"><span>Oynanılan Oyunlar:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 mb-2 font-medium"><span>{t.totalPoints}:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 font-medium"><span>{t.gamesPlayed}:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
                </div>
-               <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? 'Yadda saxlanıldı!' : 'Yadda saxla'}</Button>
+               <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? t.saved : t.save}</Button>
            </form>
          )}
       </div>
@@ -623,11 +866,29 @@ const App: React.FC = () => {
 
     return (
       <div className="flex flex-col h-full w-full relative z-10 overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        {/* NEW: Top Right Privacy Button - VISIBLE */}
+        {/* Language Switcher */}
+        <div className="absolute top-4 left-4 z-[60] flex gap-2">
+            <button 
+                onClick={() => setLanguage('az')} 
+                className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all shadow-lg ${language === 'az' ? 'border-yellow-400 scale-110 ring-2 ring-yellow-400/30' : 'border-white/20 opacity-70 hover:opacity-100 grayscale hover:grayscale-0'}`}
+                title="Azərbaycan dili"
+            >
+                <img src="https://flagcdn.com/w40/az.png" alt="AZ" className="w-full h-full object-cover" />
+            </button>
+            <button 
+                onClick={() => setLanguage('en')} 
+                className={`w-8 h-8 rounded-full overflow-hidden border-2 transition-all shadow-lg ${language === 'en' ? 'border-yellow-400 scale-110 ring-2 ring-yellow-400/30' : 'border-white/20 opacity-70 hover:opacity-100 grayscale hover:grayscale-0'}`}
+                title="English"
+            >
+                <img src="https://flagcdn.com/w40/gb.png" alt="EN" className="w-full h-full object-cover" />
+            </button>
+        </div>
+
+        {/* Top Right Privacy Button - VISIBLE */}
         <div className="absolute top-4 right-4 z-[60]">
-            <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center p-2.5 bg-yellow-500/20 rounded-full text-yellow-400 hover:text-white border border-yellow-500 hover:bg-yellow-500 backdrop-blur-md transition-all shadow-lg hover:shadow-yellow-500/40 animate-pulse-slow" title="Məxfilik Siyasəti">
+            <button onClick={() => setShowPrivacyModal(true)} className="flex items-center justify-center p-2.5 bg-yellow-500/20 rounded-full text-yellow-400 hover:text-white border border-yellow-500 hover:bg-yellow-500 backdrop-blur-md transition-all shadow-lg hover:shadow-yellow-500/40 animate-pulse-slow" title={t.privacyTitle}>
                 <Shield size={22} fill="currentColor" className="text-yellow-500 hover:text-white" />
-            </a>
+            </button>
         </div>
 
         <div className="flex flex-col min-h-full w-full justify-between">
@@ -635,8 +896,8 @@ const App: React.FC = () => {
                 <div className="flex flex-col items-center justify-center pt-16 md:pt-24 shrink-0 relative z-20 px-4">
                    <div className="scale-105 md:scale-110"><GameLogo size="xl" /></div>
                    <div className="mt-10 md:mt-12 text-center z-30 px-4">
-                     <p className="text-blue-100 text-sm md:text-base font-semibold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Bilgi gücdür,</p>
-                     <p className="text-yellow-400 text-lg md:text-xl font-bold italic tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">Bilməcə Live isə meydan!</p>
+                     <p className="text-blue-100 text-sm md:text-base font-bold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t.slogan1}</p>
+                     <p className="text-yellow-400 text-lg md:text-xl font-black italic tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">{t.slogan2}</p>
                    </div>
                 </div>
                 <div className="flex justify-between items-center px-6 w-full max-w-sm mx-auto gap-4 mt-4">
@@ -644,14 +905,14 @@ const App: React.FC = () => {
                       <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
                       <div className="flex items-center gap-2 relative z-10">
                         <Trophy size={16} className="text-yellow-400 shrink-0" />
-                        <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">Rekord Xal</span><span className="text-sm font-bold text-white leading-none font-mono">{highestScore.toLocaleString()}</span></div>
+                        <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">{t.highScore}</span><span className="text-sm font-black text-white leading-none font-mono">{highestScore.toLocaleString()}</span></div>
                       </div>
                    </div>
                    <div className="flex-1 flex flex-col justify-center px-3 py-2 bg-[#000030]/80 border border-blue-600 rounded-xl shadow-[0_0_10px_rgba(37,99,235,0.3)] min-h-[50px] relative overflow-hidden group">
                       <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
                       <div className="flex items-center gap-2 relative z-10">
                         <Users size={16} className="text-blue-400 shrink-0" />
-                         <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">Oyunçu Sayı</span><span className="text-sm font-bold text-white leading-none font-mono">{playerCount.toLocaleString()}</span></div>
+                         <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">{t.players}</span><span className="text-sm font-black text-white leading-none font-mono">{playerCount.toLocaleString()}</span></div>
                       </div>
                    </div>
                 </div>
@@ -666,7 +927,7 @@ const App: React.FC = () => {
                            {currentUser.name.charAt(0).toUpperCase()}
                         </div>
                         <div className="flex flex-col min-w-0">
-                           <span className="text-[9px] text-blue-300 uppercase font-bold tracking-wider leading-none mb-1">Xoş gəldin</span>
+                           <span className="text-[9px] text-blue-300 uppercase font-bold tracking-wider leading-none mb-1">{t.welcome}</span>
                            <span className="text-sm font-bold text-white truncate leading-none">{currentUser.name}</span>
                         </div>
                      </div>
@@ -682,21 +943,20 @@ const App: React.FC = () => {
                <div className="w-full flex flex-col gap-3">
                {!isLoggedIn ? (
                  <>
-                   <Button fullWidth onClick={() => setGameStatus(GameStatus.LOGIN)} className={`${btnBase} bg-blue-900/80 border-blue-500 text-white`}><LogIn size={20} /> Daxil ol</Button>
-                   <Button fullWidth onClick={() => setGameStatus(GameStatus.REGISTER)} className={`${btnBase} bg-fuchsia-900/80 border-fuchsia-500 text-white`}><UserPlus size={20} /> Qeydiyyat</Button>
-                   <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> Kömək</Button>
-                   <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> Reytinq</Button>
-                   {/* Explicit Privacy Button for AdSense */}
-                   <a href="/privacy.html" target="_blank" rel="noopener noreferrer" className="w-full no-underline block">
-                      <Button fullWidth className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> Məxfilik Siyasəti</Button>
-                   </a>
+                   <Button fullWidth onClick={() => setGameStatus(GameStatus.LOGIN)} className={`${btnBase} bg-blue-900/80 border-blue-500 text-white`}><LogIn size={20} /> {t.login}</Button>
+                   <Button fullWidth onClick={() => setGameStatus(GameStatus.REGISTER)} className={`${btnBase} bg-fuchsia-900/80 border-fuchsia-500 text-white`}><UserPlus size={20} /> {t.register}</Button>
+                   <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> {t.help}</Button>
+                   <Button fullWidth onClick={() => setShowAboutModal(true)} className={`${btnBase} bg-indigo-900/80 border-indigo-500 text-white`}><Info size={20} /> {t.about}</Button>
+                   <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> {t.leaderboard}</Button>
+                   <Button fullWidth onClick={() => setShowPrivacyModal(true)} className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> {t.privacy}</Button>
                  </>
                ) : (
                  <>
-                   <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className={`${btnBase} bg-green-900/80 border-green-500 text-white`}><Play size={22} fill="currentColor" /> Oyuna Başla</Button>
-                   {isAdmin && <Button fullWidth onClick={() => setGameStatus(GameStatus.ADMIN_DASHBOARD)} className={`${btnBase} bg-gray-800/80 border-gray-500 text-white`}><Wrench size={20} /> Admin Panel</Button>}
-                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> Reytinq</Button>
-                   <Button fullWidth onClick={handleLogout} className={`${btnBase} bg-red-900/60 border-red-500/80 text-red-100`}><LogOut size={20} /> Çıxış</Button>
+                   <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className={`${btnBase} bg-green-900/80 border-green-500 text-white`}><Play size={22} fill="currentColor" /> {t.startGame}</Button>
+                   {isAdmin && <Button fullWidth onClick={() => setGameStatus(GameStatus.ADMIN_DASHBOARD)} className={`${btnBase} bg-gray-800/80 border-gray-500 text-white`}><Wrench size={20} /> {t.adminPanel}</Button>}
+                   <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> {t.leaderboard}</Button>
+                   <Button fullWidth onClick={() => setShowAboutModal(true)} className={`${btnBase} bg-indigo-900/80 border-indigo-500 text-white`}><Info size={20} /> {t.about}</Button>
+                   <Button fullWidth onClick={handleLogout} className={`${btnBase} bg-red-900/60 border-red-500/80 text-red-100`}><LogOut size={20} /> {t.logout}</Button>
                  </>
                )}
                </div>
@@ -717,23 +977,23 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
         <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-           <div className="flex items-center gap-3"><Trophy size={32} className="text-yellow-500" /><h2 className="text-xl font-bold text-white">Liderlər Cədvəli</h2></div>
+           <div className="flex items-center gap-3"><Trophy size={32} className="text-yellow-500" /><h2 className="text-xl font-black text-white">{t.leaderboardTitle}</h2></div>
            <Button variant="secondary" onClick={() => setGameStatus(previousStatus || GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><ArrowLeft size={18} /></Button>
         </div>
-        <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
+        <div className="flex-1 min-h-0 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
           {sortedUsers.map((user, index) => (
             <div key={user.username} className={`flex items-center justify-between p-4 rounded-lg border ${user.username === currentUser?.username ? 'bg-blue-900/40 border-blue-500' : 'bg-slate-800/80 border-slate-600'}`}>
                <div className="flex items-center gap-4">
                   <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${index < 3 ? 'bg-yellow-500 text-black' : 'bg-slate-700 text-slate-300'}`}>{index + 1}</span>
-                  <div><div className="font-bold text-white text-lg">{user.name}</div><div className="text-xs text-slate-400">Oyunlar: {user.gamesPlayed}</div></div>
+                  <div><div className="font-bold text-white text-lg">{user.name}</div><div className="text-xs text-slate-400 font-medium">{t.gamesPlayed}: {user.gamesPlayed}</div></div>
                </div>
                <div className="text-green-400 font-mono font-bold text-xl">{user.totalPoints.toLocaleString()}</div>
             </div>
           ))}
-          {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10">Hələ ki heç kim oynamayıb.</div>}
+          {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10 font-medium">{t.noPlayers}</div>}
         </div>
         {/* AdSense Leaderboard Bottom */}
-        <AdSenseBanner dataAdSlot="1234567890" />
+        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
       </div>
     );
   };
@@ -748,31 +1008,31 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10 overflow-hidden">
         <header className="flex justify-between items-center mb-4 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-           <div className="flex items-center gap-3"><Wrench size={32} className="text-gray-300" /><h2 className="text-xl font-bold text-white">Admin Panel</h2></div>
-           <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800">Çıxış</Button>
+           <div className="flex items-center gap-3"><Wrench size={32} className="text-gray-300" /><h2 className="text-xl font-black text-white">{t.adminPanel}</h2></div>
+           <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800">{t.logout}</Button>
         </header>
 
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-4 shrink-0">
            <button onClick={() => setAdminTab('users')} className={`flex-1 p-2 rounded-lg font-bold transition-colors ${adminTab === 'users' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>İstifadəçilər</button>
            <button onClick={() => setAdminTab('questions')} className={`flex-1 p-2 rounded-lg font-bold transition-colors ${adminTab === 'questions' ? 'bg-blue-600 text-white' : 'bg-slate-800 text-slate-400'}`}>Suallar</button>
         </div>
 
         {/* Search */}
-        <div className="mb-4 relative">
-          <input type="text" placeholder="Axtarış..." value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} className={`w-full p-3 pl-10 rounded-lg border ${inputClass}`} />
+        <div className="mb-4 relative shrink-0">
+          <input type="text" placeholder="Axtarış..." value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} className={`w-full p-3 pl-10 rounded-lg border font-medium ${inputClass}`} />
           <Search className="absolute left-3 top-3.5 text-slate-400" size={20} />
         </div>
 
         {adminTab === 'users' ? (
-          <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-3">
+          <div className="flex-1 min-h-0 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-3">
             {filteredUsers.map(user => (
               <div key={user.username} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-800/80 rounded-lg border border-slate-600 gap-4">
                  <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-white text-lg">{user.name}</span>
-                      <span className="text-xs text-blue-300 px-2 py-0.5 bg-blue-900/50 rounded-full">{user.username}</span>
+                      <span className="text-xs text-blue-300 px-2 py-0.5 bg-blue-900/50 rounded-full font-medium">{user.username}</span>
                     </div>
-                    <div className="text-sm text-slate-400 mt-1">Xal: <span className="text-green-400 font-mono font-bold">{user.totalPoints}</span> | Şifrə: <span className="text-red-300 font-mono">{user.password}</span></div>
+                    <div className="text-sm text-slate-400 mt-1 font-medium">{t.totalPoints}: <span className="text-green-400 font-mono font-bold">{user.totalPoints}</span> | {t.password}: <span className="text-red-300 font-mono">{user.password}</span></div>
                  </div>
                  <div className="flex gap-2">
                    <button onClick={() => startEditingUser(user)} className="p-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 transition-colors"><Edit size={16} /></button>
@@ -782,23 +1042,24 @@ const App: React.FC = () => {
             ))}
           </div>
         ) : (
-          <div className="flex-1 flex flex-col overflow-hidden">
-             <div className="flex gap-2 mb-2">
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
+             <div className="flex gap-2 mb-2 shrink-0">
                 <Button onClick={() => openQuestionModal()} className="flex-1 bg-green-700 text-sm py-2"><PlusCircle size={16} className="mr-2"/> Yeni Sual</Button>
                 <Button onClick={handleSeedQuestions} className="flex-1 bg-yellow-700 text-sm py-2"><Database size={16} className="mr-2"/> Bazanı Doldur</Button>
              </div>
-             <div className="flex-1 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-3">
+             <div className="flex-1 min-h-0 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-3">
                {filteredQuestions.map((q, idx) => (
                  <div key={q.id || idx} className="p-4 bg-slate-800/80 rounded-lg border border-slate-600">
                     <div className="flex justify-between items-start mb-2">
-                       <span className="text-xs font-bold text-blue-300 bg-blue-900/30 px-2 py-1 rounded uppercase">{q.topic}</span>
-                       <div className="flex gap-2">
+                       <span className="text-xs font-bold text-blue-300 bg-blue-900/30 px-2 py-1 rounded uppercase mr-2">{q.topic}</span>
+                       <span className={`text-xs font-bold px-2 py-1 rounded uppercase ${q.language === 'en' ? 'bg-purple-900/30 text-purple-300' : 'bg-yellow-900/30 text-yellow-300'}`}>{q.language || 'az'}</span>
+                       <div className="flex gap-2 ml-auto">
                           <button onClick={() => openQuestionModal(q)} className="text-blue-400 hover:text-white"><Edit size={16}/></button>
                           <button onClick={() => handleDeleteQuestion(q.id as string)} className="text-red-400 hover:text-white"><Trash2 size={16}/></button>
                        </div>
                     </div>
-                    <p className="text-white font-semibold mb-2">{q.text}</p>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                    <p className="text-white font-bold mb-2">{q.text}</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 font-medium">
                        {q.options.map((opt, i) => (
                          <span key={i} className={i === q.correctAnswerIndex ? "text-green-400 font-bold" : ""}>{opt}</span>
                        ))}
@@ -808,6 +1069,8 @@ const App: React.FC = () => {
              </div>
           </div>
         )}
+        {/* AdSense Admin Bottom */}
+        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
 
         {/* User Edit Modal */}
         {userToEdit && (
@@ -815,14 +1078,14 @@ const App: React.FC = () => {
              <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030]`}>
                 <h3 className="text-xl font-bold mb-4 text-white">Redaktə et: {userToEdit.username}</h3>
                 <form onSubmit={handleAdminSaveUser} className="space-y-3">
-                   <div><label className="text-xs text-blue-300 block mb-1">Ad</label><input type="text" value={adminEditForm.name} onChange={e => setAdminEditForm({...adminEditForm, name: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
+                   <div><label className="text-xs text-blue-300 block mb-1">{t.nameSurname}</label><input type="text" value={adminEditForm.name} onChange={e => setAdminEditForm({...adminEditForm, name: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
                    <div className="flex gap-2">
-                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">Yaş</label><input type="number" value={adminEditForm.age} onChange={e => setAdminEditForm({...adminEditForm, age: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
-                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">Cins</label><select value={adminEditForm.gender} onChange={e => setAdminEditForm({...adminEditForm, gender: e.target.value as any})} className={`w-full p-2 rounded border ${inputClass}`}><option value="Kişi">Kişi</option><option value="Qadın">Qadın</option></select></div>
+                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">{t.age}</label><input type="number" value={adminEditForm.age} onChange={e => setAdminEditForm({...adminEditForm, age: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
+                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">{t.gender}</label><select value={adminEditForm.gender} onChange={e => setAdminEditForm({...adminEditForm, gender: e.target.value as any})} className={`w-full p-2 rounded border font-medium ${inputClass}`}><option value="Kişi">{t.male}</option><option value="Qadın">{t.female}</option></select></div>
                    </div>
-                   <div><label className="text-xs text-red-300 block mb-1">Şifrə</label><input type="text" value={adminEditForm.password} onChange={e => setAdminEditForm({...adminEditForm, password: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
-                   <div><label className="text-xs text-green-300 block mb-1">Xal</label><input type="number" value={adminEditForm.totalPoints} onChange={e => setAdminEditForm({...adminEditForm, totalPoints: Number(e.target.value)})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
-                   <div className="flex gap-2 mt-4"><Button type="submit" fullWidth className="bg-green-700">Yadda saxla</Button><Button type="button" fullWidth variant="secondary" onClick={() => setUserToEdit(null)}>Ləğv et</Button></div>
+                   <div><label className="text-xs text-red-300 block mb-1">{t.password}</label><input type="text" value={adminEditForm.password} onChange={e => setAdminEditForm({...adminEditForm, password: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
+                   <div><label className="text-xs text-green-300 block mb-1">{t.totalPoints}</label><input type="number" value={adminEditForm.totalPoints} onChange={e => setAdminEditForm({...adminEditForm, totalPoints: Number(e.target.value)})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
+                   <div className="flex gap-2 mt-4"><Button type="submit" fullWidth className="bg-green-700">{t.save}</Button><Button type="button" fullWidth variant="secondary" onClick={() => setUserToEdit(null)}>Ləğv et</Button></div>
                 </form>
              </div>
           </div>
@@ -834,28 +1097,35 @@ const App: React.FC = () => {
              <div className={`${cardClass} p-6 rounded-2xl w-full max-w-lg shadow-2xl bg-[#000030] overflow-y-auto max-h-[90vh]`}>
                 <h3 className="text-xl font-bold mb-4 text-white">{questionToEdit ? "Sualı Düzəlt" : "Yeni Sual"}</h3>
                 <form onSubmit={handleSaveQuestion} className="space-y-3">
-                   <div><label className="text-xs text-blue-300 block mb-1">Sual Mətni</label><textarea value={questionForm.text} onChange={e => setQuestionForm({...questionForm, text: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
+                   <div><label className="text-xs text-blue-300 block mb-1">Sual Mətni</label><textarea value={questionForm.text} onChange={e => setQuestionForm({...questionForm, text: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
                    <div className="grid grid-cols-2 gap-2">
-                      <div><label className="text-xs text-slate-400">Variant A</label><input type="text" value={questionForm.optionA} onChange={e => setQuestionForm({...questionForm, optionA: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
-                      <div><label className="text-xs text-slate-400">Variant B</label><input type="text" value={questionForm.optionB} onChange={e => setQuestionForm({...questionForm, optionB: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
-                      <div><label className="text-xs text-slate-400">Variant C</label><input type="text" value={questionForm.optionC} onChange={e => setQuestionForm({...questionForm, optionC: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
-                      <div><label className="text-xs text-slate-400">Variant D</label><input type="text" value={questionForm.optionD} onChange={e => setQuestionForm({...questionForm, optionD: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant A</label><input type="text" value={questionForm.optionA} onChange={e => setQuestionForm({...questionForm, optionA: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant B</label><input type="text" value={questionForm.optionB} onChange={e => setQuestionForm({...questionForm, optionB: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant C</label><input type="text" value={questionForm.optionC} onChange={e => setQuestionForm({...questionForm, optionC: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant D</label><input type="text" value={questionForm.optionD} onChange={e => setQuestionForm({...questionForm, optionD: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
                    </div>
                    <div className="flex gap-2">
                       <div className="flex-1">
                          <label className="text-xs text-green-300 block mb-1">Düzgün Variant</label>
-                         <select value={questionForm.correctAnswerIndex} onChange={e => setQuestionForm({...questionForm, correctAnswerIndex: Number(e.target.value)})} className={`w-full p-2 rounded border ${inputClass}`}>
+                         <select value={questionForm.correctAnswerIndex} onChange={e => setQuestionForm({...questionForm, correctAnswerIndex: Number(e.target.value)})} className={`w-full p-2 rounded border font-medium ${inputClass}`}>
                             <option value={0}>A</option><option value={1}>B</option><option value={2}>C</option><option value={3}>D</option>
                          </select>
                       </div>
                       <div className="flex-1">
                          <label className="text-xs text-blue-300 block mb-1">Mövzu</label>
-                         <select value={questionForm.topic} onChange={e => setQuestionForm({...questionForm, topic: e.target.value as Topic})} className={`w-full p-2 rounded border ${inputClass}`}>
-                            {TOPICS.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+                         <select value={questionForm.topic} onChange={e => setQuestionForm({...questionForm, topic: e.target.value as Topic})} className={`w-full p-2 rounded border font-medium ${inputClass}`}>
+                            {TOPICS.map(t => <option key={t.id} value={t.id}>{t.label.az}</option>)}
+                         </select>
+                      </div>
+                      <div className="flex-1">
+                         <label className="text-xs text-purple-300 block mb-1">Dil</label>
+                         <select value={questionForm.language} onChange={e => setQuestionForm({...questionForm, language: e.target.value as 'az' | 'en'})} className={`w-full p-2 rounded border font-medium ${inputClass}`}>
+                            <option value="az">AZ</option>
+                            <option value="en">EN</option>
                          </select>
                       </div>
                    </div>
-                   <div className="flex gap-2 mt-4"><Button type="submit" fullWidth className="bg-green-700">Yadda saxla</Button><Button type="button" fullWidth variant="secondary" onClick={() => setIsAddingQuestion(false)}>Ləğv et</Button></div>
+                   <div className="flex gap-2 mt-4"><Button type="submit" fullWidth className="bg-green-700">{t.save}</Button><Button type="button" fullWidth variant="secondary" onClick={() => setIsAddingQuestion(false)}>Ləğv et</Button></div>
                 </form>
              </div>
           </div>
@@ -868,14 +1138,14 @@ const App: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-full p-6 w-full max-w-md mx-auto relative z-20">
       <div className="bg-[#000030]/90 p-8 rounded-2xl border border-blue-500/50 shadow-2xl w-full backdrop-blur-md">
          <div className="flex justify-center mb-6"><div className="p-3 bg-blue-900/50 rounded-full border border-blue-400"><LogIn size={32} className="text-blue-300"/></div></div>
-         <h2 className="text-2xl font-bold text-center text-white mb-6">Giriş</h2>
-         {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2"><AlertCircle size={16}/>{authError}</div>}
+         <h2 className="text-2xl font-black text-center text-white mb-6">{t.loginTitle}</h2>
+         {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2 font-medium"><AlertCircle size={16}/>{authError}</div>}
          <form onSubmit={handleLogin} className="space-y-4">
-           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">İstifadəçi adı</label><input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" placeholder="Username" /></div>
-           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Şifrə</label><input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" placeholder="Password" /></div>
-           <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4">{isAuthLoading ? 'Gözləyin...' : 'Daxil ol'}</Button>
+           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.username}</label><input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" placeholder={t.username} /></div>
+           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.password}</label><input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" placeholder={t.password} /></div>
+           <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4">{isAuthLoading ? t.loading : t.login}</Button>
          </form>
-         <div className="mt-6 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button></div>
+         <div className="mt-6 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline font-medium">{t.back}</button></div>
       </div>
     </div>
   );
@@ -886,50 +1156,50 @@ const App: React.FC = () => {
          {!registrationSuccess ? (
            <>
              <div className="flex justify-center mb-4"><div className="p-3 bg-fuchsia-900/50 rounded-full border border-fuchsia-400"><UserPlus size={32} className="text-fuchsia-300"/></div></div>
-             <h2 className="text-2xl font-bold text-center text-white mb-4">Qeydiyyat</h2>
-             {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2"><AlertCircle size={16}/>{authError}</div>}
+             <h2 className="text-2xl font-black text-center text-white mb-4">{t.registerTitle}</h2>
+             {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2 font-medium"><AlertCircle size={16}/>{authError}</div>}
              <form onSubmit={handleRegister} className="space-y-3">
                <div>
-                 <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">İstifadəçi adı</label>
+                 <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.username}</label>
                  <div className="relative">
-                   <input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className={`w-full bg-slate-800/80 border ${usernameStatus === 'taken' ? 'border-red-500' : usernameStatus === 'valid' ? 'border-green-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder="Minimum 3 simvol" />
+                   <input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className={`w-full bg-slate-800/80 border font-medium ${usernameStatus === 'taken' ? 'border-red-500' : usernameStatus === 'valid' ? 'border-green-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder={t.minChars} />
                    {usernameStatus === 'checking' && <div className="absolute right-3 top-3.5"><div className="animate-spin h-4 w-4 border-2 border-fuchsia-500 rounded-full border-t-transparent"></div></div>}
                    {usernameStatus === 'valid' && <CheckCircle size={18} className="absolute right-3 top-3.5 text-green-500" />}
                  </div>
                </div>
                <div>
-                  <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">Ad Soyad</label>
-                  <input type="text" value={authForm.name} onChange={e => setAuthForm({...authForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors" />
+                  <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.nameSurname}</label>
+                  <input type="text" value={authForm.name} onChange={e => setAuthForm({...authForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors font-medium" />
                </div>
                <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">Yaş</label>
-                    <input type="number" value={authForm.age} onChange={e => setAuthForm({...authForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors" />
+                    <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.age}</label>
+                    <input type="number" value={authForm.age} onChange={e => setAuthForm({...authForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors font-medium" />
                   </div>
                   <div className="flex-1">
-                    <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">Cins</label>
-                    <select value={authForm.gender} onChange={e => setAuthForm({...authForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors appearance-none">
-                      <option value="">Seçin</option>
-                      <option value="Kişi">Kişi</option>
-                      <option value="Qadın">Qadın</option>
+                    <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.gender}</label>
+                    <select value={authForm.gender} onChange={e => setAuthForm({...authForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors appearance-none font-medium">
+                      <option value="">{t.select}</option>
+                      <option value="Kişi">{t.male}</option>
+                      <option value="Qadın">{t.female}</option>
                     </select>
                   </div>
                </div>
                <div>
-                 <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">Şifrə</label>
-                 <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className={`w-full bg-slate-800/80 border ${passwordStatus === 'invalid' && authForm.password.length > 0 ? 'border-red-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder="5-10 simvol" />
-                 <p className="text-[10px] text-slate-400 mt-1 ml-1">Şifrə 5-10 simvol arası olmalıdır.</p>
+                 <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.password}</label>
+                 <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className={`w-full bg-slate-800/80 border font-medium ${passwordStatus === 'invalid' && authForm.password.length > 0 ? 'border-red-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder={t.passwordHint} />
+                 <p className="text-[10px] text-slate-400 mt-1 ml-1">{t.passwordHint}</p>
                </div>
-               <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4 bg-fuchsia-700 hover:bg-fuchsia-600 border-fuchsia-500">{isAuthLoading ? 'Gözləyin...' : 'Qeydiyyatdan keç'}</Button>
+               <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4 bg-fuchsia-700 hover:bg-fuchsia-600 border-fuchsia-500">{isAuthLoading ? t.loading : t.registerTitle}</Button>
              </form>
-             <div className="mt-4 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">Geri qayıt</button></div>
+             <div className="mt-4 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline font-medium">{t.back}</button></div>
            </>
          ) : (
            <div className="text-center py-8 animate-fade-in">
               <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 text-green-400 border-2 border-green-500"><Check size={32} /></div>
-              <h2 className="text-2xl font-bold text-white mb-2">Uğurlu Qeydiyyat!</h2>
-              <p className="text-slate-300 mb-6">Hesabınız yaradıldı. İndi giriş edə bilərsiniz.</p>
-              <Button onClick={finishRegistration} fullWidth className="bg-green-600 border-green-400">Davam et</Button>
+              <h2 className="text-2xl font-black text-white mb-2">{t.registerSuccess}</h2>
+              <p className="text-slate-300 mb-6 font-medium">{t.registerSuccessDesc}</p>
+              <Button onClick={finishRegistration} fullWidth className="bg-green-600 border-green-400">{t.continue}</Button>
            </div>
          )}
       </div>
@@ -939,13 +1209,13 @@ const App: React.FC = () => {
   const renderTopicSelection = () => (
     <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
       <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-         <div className="flex items-center gap-3"><BrainCircuit size={32} className="text-blue-400" /><h2 className="text-xl font-bold text-white">Mövzu Seçimi</h2></div>
+         <div className="flex items-center gap-3"><BrainCircuit size={32} className="text-blue-400" /><h2 className="text-xl font-black text-white">{t.topicSelection}</h2></div>
          <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setShowProfileModal(true)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><UserIcon size={18} /></Button>
             <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><Home size={18} /></Button>
          </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4 [&::-webkit-scrollbar]:hidden">
+      <div className="flex-1 min-h-0 grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto pb-4 [&::-webkit-scrollbar]:hidden">
         {TOPICS.map((topic) => {
            const Icon = ICON_MAP[topic.icon] || Globe;
            const isCompleted = currentUser?.completedTopics.includes(topic.id);
@@ -970,8 +1240,8 @@ const App: React.FC = () => {
                    <Icon size={40} className="text-white drop-shadow-md" />
                 </div>
                 <div className="text-center">
-                   <h3 className="text-lg md:text-xl font-bold text-white mb-1">{topic.label}</h3>
-                   <p className="text-xs md:text-sm text-slate-300">{topic.description}</p>
+                   <h3 className="text-lg md:text-xl font-extrabold text-white mb-1">{topic.label[language]}</h3>
+                   <p className="text-xs md:text-sm text-slate-300 font-medium">{topic.description[language]}</p>
                 </div>
                 {isCompleted && <div className="absolute top-2 right-2 text-green-500"><CheckCircle size={24} /></div>}
              </button>
@@ -979,12 +1249,12 @@ const App: React.FC = () => {
         })}
       </div>
       {/* AdSense Topic Selection Bottom */}
-      <AdSenseBanner dataAdSlot="1234567890" />
+      <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
     </div>
   );
 
   const renderPlaying = () => {
-    if (!questions[currentQuestionIndex]) return <div>Yüklənir...</div>;
+    if (!questions[currentQuestionIndex]) return <div>{t.loading}</div>;
     const currentQ = questions[currentQuestionIndex];
     
     return (
@@ -994,7 +1264,7 @@ const App: React.FC = () => {
              <div className="flex gap-2 items-center">
                <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="p-2 bg-slate-800 rounded-full text-slate-400 hover:text-white border border-slate-600"><ArrowLeft size={20}/></button>
                <div className="bg-slate-900/80 px-4 py-2 rounded-full border border-blue-500/30 flex items-center gap-2">
-                 <span className="text-blue-300 text-xs font-bold uppercase tracking-wider">Sual</span>
+                 <span className="text-blue-300 text-xs font-bold uppercase tracking-wider">{t.question}</span>
                  <span className="text-white font-mono font-bold">{currentQuestionIndex + 1}/{questions.length}</span>
                </div>
              </div>
@@ -1015,7 +1285,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
                 
-                <h2 className="text-2xl md:text-3xl font-bold text-white leading-relaxed text-center">{currentQ.text}</h2>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white leading-relaxed text-center">{currentQ.text}</h2>
              </div>
 
              {/* Options Grid */}
@@ -1045,8 +1315,8 @@ const App: React.FC = () => {
                          ${extraClass || "bg-slate-800/80 border-slate-600 hover:bg-blue-900/60 hover:border-blue-400 text-white focus:outline-none"}
                        `}
                      >
-                       <span className="font-bold text-yellow-500 mr-3 text-lg">{['A','B','C','D'][idx]}:</span>
-                       <span className="font-medium text-sm md:text-base">{opt}</span>
+                       <span className="font-extrabold text-yellow-500 mr-3 text-lg">{['A','B','C','D'][idx]}:</span>
+                       <span className="font-bold text-sm md:text-base">{opt}</span>
                      </button>
                    );
                 })}
@@ -1060,7 +1330,7 @@ const App: React.FC = () => {
                   className={`flex flex-col items-center gap-1 transition-all active:scale-90 ${!lifelines.fiftyFifty || answerState !== AnswerState.IDLE ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:-translate-y-1'}`}
                 >
                   <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-purple-600 border-2 border-purple-400 flex items-center justify-center font-bold text-white text-sm shadow-lg">50:50</div>
-                  <span className="text-xs text-purple-300 font-bold tracking-wide">50/50</span>
+                  <span className="text-xs text-purple-300 font-bold tracking-wide">{t.lifeline5050}</span>
                 </button>
                 <button 
                    onClick={useAskAudience} 
@@ -1068,7 +1338,7 @@ const App: React.FC = () => {
                    className={`flex flex-col items-center gap-1 transition-all active:scale-90 ${!lifelines.askAudience || answerState !== AnswerState.IDLE ? 'opacity-40 grayscale cursor-not-allowed' : 'hover:-translate-y-1'}`}
                 >
                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-cyan-600 border-2 border-cyan-400 flex items-center justify-center text-white shadow-lg"><Users size={32} /></div>
-                   <span className="text-xs text-cyan-300 font-bold tracking-wide">Auditoriya</span>
+                   <span className="text-xs text-cyan-300 font-bold tracking-wide">{t.lifelineAudience}</span>
                 </button>
                 <button 
                    onClick={useAskAI} 
@@ -1078,7 +1348,7 @@ const App: React.FC = () => {
                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-emerald-600 border-2 border-emerald-400 flex items-center justify-center text-white shadow-lg relative">
                       {aiLoading ? <div className="animate-spin h-6 w-6 border-2 border-white rounded-full border-t-transparent"></div> : <BrainCircuit size={32} />}
                    </div>
-                   <span className="text-xs text-emerald-300 font-bold tracking-wide">Bilgə insan</span>
+                   <span className="text-xs text-emerald-300 font-bold tracking-wide">{t.lifelineAI}</span>
                 </button>
              </div>
          </div>
@@ -1106,10 +1376,10 @@ const App: React.FC = () => {
                   <button onClick={() => { setAiHint(null); setIsTimerPaused(false); }} className="absolute top-3 right-3 text-slate-400 hover:text-white"><X size={20}/></button>
                   <div className="flex items-center gap-3 mb-4 text-emerald-400 border-b border-emerald-500/30 pb-3">
                      <BrainCircuit size={32} />
-                     <h3 className="text-xl font-bold">Bilgə İnsan deyir:</h3>
+                     <h3 className="text-xl font-black">{t.aiSays}</h3>
                   </div>
-                  <p className="text-white text-lg leading-relaxed italic">"{aiHint}"</p>
-                  <Button onClick={() => { setAiHint(null); setIsTimerPaused(false); }} fullWidth className="mt-6 bg-emerald-700 hover:bg-emerald-600 border-emerald-500">Təşəkkürlər</Button>
+                  <p className="text-white text-lg leading-relaxed italic font-medium">"{aiHint}"</p>
+                  <Button onClick={() => { setAiHint(null); setIsTimerPaused(false); }} fullWidth className="mt-6 bg-emerald-700 hover:bg-emerald-600 border-emerald-500">{t.thanks}</Button>
                </div>
             </div>
          )}
@@ -1121,37 +1391,37 @@ const App: React.FC = () => {
      <div className="flex flex-col items-center justify-center min-h-full p-6 w-full max-w-md mx-auto relative z-20">
       <div className="bg-[#000030]/90 p-8 rounded-2xl border border-blue-500/50 shadow-2xl w-full backdrop-blur-md">
          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Profil</h2>
+            <h2 className="text-2xl font-black text-white">{t.profile}</h2>
             <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="text-slate-400 hover:text-white"><X size={24}/></button>
          </div>
          {currentUser && (
            <form onSubmit={handleProfileUpdate} className="space-y-4">
                <div>
-                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">İstifadəçi adı (dəyişdirilə bilməz)</label>
-                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed" />
+                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.usernameImmutable}</label>
+                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed font-medium" />
                </div>
                <div>
-                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Ad Soyad</label>
-                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                  <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.nameSurname}</label>
+                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                </div>
                <div className="flex gap-3">
                   <div className="flex-1">
-                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Yaş</label>
-                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.age}</label>
+                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                   </div>
                   <div className="flex-1">
-                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">Cins</label>
-                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors">
-                      <option value="Kişi">Kişi</option>
-                      <option value="Qadın">Qadın</option>
+                    <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.gender}</label>
+                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium">
+                      <option value="Kişi">{t.male}</option>
+                      <option value="Qadın">{t.female}</option>
                     </select>
                   </div>
                </div>
                <div className="pt-2">
-                 <div className="flex justify-between text-sm text-slate-400 mb-2"><span>Toplam Xal:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
-                 <div className="flex justify-between text-sm text-slate-400"><span>Oynanılan Oyunlar:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 mb-2 font-medium"><span>{t.totalPoints}:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 font-medium"><span>{t.gamesPlayed}:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
                </div>
-               <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? 'Yadda saxlanıldı!' : 'Yadda saxla'}</Button>
+               <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? t.saved : t.save}</Button>
            </form>
          )}
       </div>
@@ -1165,25 +1435,25 @@ const App: React.FC = () => {
               {isWin ? <Trophy size={48} /> : <LogOut size={48} className="ml-1" />}
            </div>
            
-           <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2 drop-shadow-lg uppercase tracking-wider">{isWin ? "Təbriklər!" : "Məğlub oldunuz"}</h1>
-           <p className={`text-lg md:text-xl font-medium mb-8 ${isWin ? 'text-green-200' : 'text-red-200'}`}>
+           <h1 className="text-3xl md:text-4xl font-black text-white mb-2 drop-shadow-lg uppercase tracking-wider">{isWin ? t.congrats : t.youLost}</h1>
+           <p className={`text-lg md:text-xl font-bold mb-8 ${isWin ? 'text-green-200' : 'text-red-200'}`}>
              {isWin 
-               ? "Möhtəşəm! Bütün suallara düzgün cavab verdiniz." 
+               ? t.amazingWin 
                : lossReason === 'timeout' 
-                  ? "Vaxtınız bitdi." 
-                  : "Təəssüf ki, cavab yanlışdır."}
+                  ? t.timeUp 
+                  : t.wrongAnswer}
            </p>
            
            <div className="bg-black/30 rounded-xl p-4 mb-8 border border-white/10">
-              <div className="text-slate-300 text-sm uppercase tracking-widest mb-1">Qazanılan Xal</div>
-              <div className="text-4xl font-bold text-yellow-400 font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <div className="text-slate-300 text-sm uppercase tracking-widest mb-1 font-bold">{t.scoreEarned}</div>
+              <div className="text-4xl font-black text-yellow-400 font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {(isWin ? questions.length : currentQuestionIndex) * 50}
               </div>
            </div>
            
            <div className="flex flex-col gap-3">
-              <Button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} fullWidth className={`${isWin ? 'bg-green-700 hover:bg-green-600' : 'bg-red-700 hover:bg-red-600'} border-white/30`}>Digər mövzu seç</Button>
-              <Button onClick={() => setGameStatus(GameStatus.LEADERBOARD)} variant="secondary" fullWidth>Liderlər cədvəli</Button>
+              <Button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} fullWidth className={`${isWin ? 'bg-green-700 hover:bg-green-600' : 'bg-red-700 hover:bg-red-600'} border-white/30`}>{t.chooseOtherTopic}</Button>
+              <Button onClick={() => setGameStatus(GameStatus.LEADERBOARD)} variant="secondary" fullWidth>{t.leaderboardTitle}</Button>
            </div>
         </div>
         {/* AdSense Game Over Screen */}
@@ -1210,6 +1480,8 @@ const App: React.FC = () => {
          {gameStatus === GameStatus.ADMIN_DASHBOARD && renderAdminDashboard()}
          {(gameStatus === GameStatus.WON || gameStatus === GameStatus.LOST) && renderGameOver(gameStatus === GameStatus.WON)}
          {showProfileModal && renderProfileModal()}
+         {showPrivacyModal && renderPrivacyModal()}
+         {showAboutModal && renderAboutModal()}
       </div>
     </div>
   );

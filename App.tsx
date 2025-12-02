@@ -1,8 +1,10 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { getQuestionsByTopic, TOPICS } from './constants';
 import { GameStatus, AnswerState, Lifelines, AudienceData, User, Question, Topic } from './types';
 import { Button } from './components/Button';
 import { MoneyTree } from './components/MoneyTree';
+import AdSenseBanner from './components/AdSenseBanner';
 import { getAIHint } from './services/geminiService';
 import { dbService } from './services/db';
 import { 
@@ -221,19 +223,20 @@ const TRANSLATIONS = {
 const GameLogo = ({ size = 'normal' }: { size?: 'normal' | 'large' | 'xl' }) => {
   // Dynamic Sizes
   let containerSize = 'w-24 h-24';
-  let titleSize = 'text-xs';
-  let subSize = 'text-[10px]';
+  let titleSize = 'text-base';
+  let subSize = 'text-xs';
   let iconSize = 24;
 
   if (size === 'large') {
     containerSize = 'w-36 h-36';
-    titleSize = 'text-xl';
-    subSize = 'text-xs';
+    titleSize = 'text-2xl';
+    subSize = 'text-sm';
     iconSize = 40;
   } else if (size === 'xl') {
     containerSize = 'w-52 h-52 md:w-60 md:h-60';
-    titleSize = 'text-2xl md:text-3xl';
-    subSize = 'text-xs md:text-lg';
+    // Increased font sizes for the new layout without top/bottom text
+    titleSize = 'text-4xl md:text-5xl';
+    subSize = 'text-lg md:text-xl';
     iconSize = 48;
   }
 
@@ -242,9 +245,14 @@ const GameLogo = ({ size = 'normal' }: { size?: 'normal' | 'large' | 'xl' }) => 
        <div className="absolute inset-1 rounded-full border border-yellow-600/50"></div>
        <div className="absolute inset-3 rounded-full border border-blue-400/30"></div>
        
-       <div className="text-yellow-500 font-bold tracking-[0.2em] mb-1 drop-shadow-md uppercase text-[8px] md:text-[10px] z-10">Azərbaycan</div>
-       <div className={`text-white font-extrabold ${titleSize} leading-none tracking-wide drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] uppercase font-serif z-10`}>BİLMƏCƏ<br/>LIVE</div>
-       <div className={`text-yellow-400 font-bold ${subSize} mt-1 z-10`}>2026</div>
+       <div className="flex flex-col items-center justify-center z-10">
+         <div className={`text-white font-black tracking-tighter leading-none drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] ${titleSize}`} style={{ textShadow: "0 0 15px rgba(59, 130, 246, 0.6)" }}>
+            BİLMƏCƏ
+         </div>
+         <div className={`text-yellow-400 font-black tracking-[0.25em] leading-none mt-1 md:mt-2 drop-shadow-md ${subSize}`}>
+            LIVE
+         </div>
+       </div>
        
        <div className="absolute -bottom-5 text-yellow-500 animate-spin-slow opacity-100 filter drop-shadow-[0_0_15px_rgba(234,179,8,1)] z-20 bg-[#000040] rounded-full p-1.5 border-2 border-yellow-500">
          <Gem size={iconSize} />
@@ -984,6 +992,8 @@ const App: React.FC = () => {
           ))}
           {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10">{t.noPlayers}</div>}
         </div>
+        {/* AdSense Leaderboard Bottom */}
+        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
       </div>
     );
   };
@@ -1059,6 +1069,8 @@ const App: React.FC = () => {
              </div>
           </div>
         )}
+        {/* AdSense Admin Bottom */}
+        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
 
         {/* User Edit Modal */}
         {userToEdit && (
@@ -1236,6 +1248,8 @@ const App: React.FC = () => {
            );
         })}
       </div>
+      {/* AdSense Topic Selection Bottom */}
+      <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
     </div>
   );
 
@@ -1442,6 +1456,8 @@ const App: React.FC = () => {
               <Button onClick={() => setGameStatus(GameStatus.LEADERBOARD)} variant="secondary" fullWidth>{t.leaderboardTitle}</Button>
            </div>
         </div>
+        {/* AdSense Game Over Screen */}
+        <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="rectangle" />
      </div>
   );
 
