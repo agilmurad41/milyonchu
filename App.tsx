@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { getQuestionsByTopic, TOPICS } from './constants';
 import { GameStatus, AnswerState, Lifelines, AudienceData, User, Question, Topic } from './types';
@@ -38,9 +39,7 @@ import {
   Dumbbell,
   User as UserIcon,
   Home,
-  Shield,
-  FileText,
-  Info
+  Shield
 } from 'lucide-react';
 
 // --- ICONS MAPPING ---
@@ -61,8 +60,6 @@ const TRANSLATIONS = {
     login: "Daxil ol",
     register: "Qeydiyyat",
     help: "Kömək",
-    about: "Oyun haqqında",
-    aboutTitle: "Oyun qaqqında",
     leaderboard: "Liderlər cədvəli",
     privacy: "Məxfilik siyasəti",
     privacyTitle: "Məxfilik siyasəti",
@@ -110,7 +107,7 @@ const TRANSLATIONS = {
     totalPoints: "Toplam xal",
     userExists: "Bu istifadəçi adı artıq mövcuddur.",
     fillAllFields: "Bütün sahələri doldurun.",
-    aboutContent: "Bilməcə Live — Azərbaycan dilində onlayn intellektual viktorina oyunudur. Tarix, Coğrafiya, İncəsənət və digər mövzularda sualları cavablandırın, xal toplayın və liderlər siyahısında yüksəlin.",
+    gameDescription: "Bilməcə Live — Azərbaycan dilində onlayn intellektual viktorina oyunudur. Tarix, Coğrafiya, İncəsənət və digər mövzularda sualları cavablandırın, xal toplayın və liderlər siyahısında yüksəlin.",
     privacyContent: {
        updated: "Son yenilənmə: 01 Mart 2025",
        intro: "\"Bilməcə Live\" tətbiqi istifadəçilərin məxfiliyinə hörmət edir.",
@@ -122,7 +119,7 @@ const TRANSLATIONS = {
        ],
        contact: "Əlaqə"
     },
-    rulesTitle: "Oyun qaydaları",
+    rulesTitle: "Kömək və Qaydalar",
     rules: [
         "Oyuna başlamaq üçün qeydiyyatdan keçin.",
         "Hər mövzuda 15 sual var (5 asan, 5 orta, 5 çətin).",
@@ -143,8 +140,6 @@ const TRANSLATIONS = {
     login: "Login",
     register: "Register",
     help: "Help",
-    about: "About Game",
-    aboutTitle: "About Game",
     leaderboard: "Leaderboard",
     privacy: "Privacy Policy",
     privacyTitle: "Privacy Policy",
@@ -192,7 +187,7 @@ const TRANSLATIONS = {
     totalPoints: "Total Points",
     userExists: "Username already exists.",
     fillAllFields: "Please fill all fields.",
-    aboutContent: "Bilməcə Live is an online trivia game. Test your knowledge in History, Geography, Art, and more. Compete with players, earn points, and climb the leaderboard.",
+    gameDescription: "Bilməcə Live is an online trivia game. Test your knowledge in History, Geography, Art, and more. Compete with players, earn points, and climb the leaderboard.",
     privacyContent: {
        updated: "Last updated: March 01, 2025",
        intro: "\"Bilməcə Live\" respects user privacy.",
@@ -204,7 +199,7 @@ const TRANSLATIONS = {
        ],
        contact: "Contact"
     },
-    rulesTitle: "Game Rules",
+    rulesTitle: "Help & Rules",
     rules: [
         "Register to start playing.",
         "Each topic has 15 questions (5 easy, 5 medium, 5 hard).",
@@ -346,9 +341,6 @@ const App: React.FC = () => {
   // Privacy Modal State
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
   
-  // About Game Modal State
-  const [showAboutModal, setShowAboutModal] = useState(false);
-
   // Helper for current translations
   const t = TRANSLATIONS[language];
 
@@ -749,10 +741,16 @@ const App: React.FC = () => {
   const bgClass = "bg-[#020220]"; const cardClass = "bg-slate-900/80 border-blue-500/50 text-white"; const inputClass = "bg-slate-800 border-slate-600 text-white";
 
   const renderHelpModal = () => (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
-      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030] relative`}>
+    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[70] backdrop-blur-sm animate-fade-in">
+      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030] relative overflow-y-auto max-h-[90vh]`}>
         <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
         <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-black">{t.rulesTitle}</h2></div>
+        
+        {/* Game Description */}
+        <div className="mb-6 p-3 bg-blue-900/20 rounded-lg border border-blue-500/20">
+           <p className="text-slate-300 text-sm font-medium leading-relaxed">{t.gameDescription}</p>
+        </div>
+
         <div className="space-y-3 text-slate-300 text-sm md:text-base font-medium">
            {t.rules.map((rule, idx) => (
              <p key={idx} className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>{rule}</span></p>
@@ -763,31 +761,6 @@ const App: React.FC = () => {
     </div>
   );
   
-  const renderAboutModal = () => (
-    <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[70] backdrop-blur-sm animate-fade-in">
-      <div className={`${cardClass} p-6 rounded-2xl w-full max-w-lg shadow-2xl bg-[#000030] relative overflow-y-auto max-h-[90vh]`}>
-        <button onClick={() => setShowAboutModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
-        <div className="flex items-center gap-2 mb-4 text-slate-200 border-b border-slate-700 pb-2">
-          <Info size={24} className="text-blue-400" />
-          <h2 className="text-xl font-black">{t.aboutTitle}</h2>
-        </div>
-        
-        <div className="space-y-6">
-            <div className="p-4 bg-slate-900/60 rounded-xl border border-blue-500/20">
-                <h3 className="text-blue-300 font-bold text-base mb-2">Bilməcə Live</h3>
-                <p className="text-slate-300 text-sm leading-relaxed font-medium">
-                    {t.aboutContent}
-                </p>
-            </div>
-        </div>
-
-        <div className="mt-6 pt-4 border-t border-slate-700">
-          <Button onClick={() => setShowAboutModal(false)} fullWidth className="bg-blue-900/50 border-blue-500/50 hover:bg-blue-800">{t.close}</Button>
-        </div>
-      </div>
-    </div>
-  );
-
   const renderPrivacyModal = () => (
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-[80] backdrop-blur-sm animate-fade-in">
       <div className={`${cardClass} p-6 rounded-2xl w-full max-w-2xl shadow-2xl bg-[#000030] relative overflow-y-auto max-h-[90vh]`}>
@@ -938,7 +911,6 @@ const App: React.FC = () => {
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LOGIN)} className={`${btnBase} bg-blue-900/80 border-blue-500 text-white`}><LogIn size={20} /> {t.login}</Button>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.REGISTER)} className={`${btnBase} bg-fuchsia-900/80 border-fuchsia-500 text-white`}><UserPlus size={20} /> {t.register}</Button>
                    <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> {t.help}</Button>
-                   <Button fullWidth onClick={() => setShowAboutModal(true)} className={`${btnBase} bg-indigo-900/80 border-indigo-500 text-white`}><Info size={20} /> {t.about}</Button>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> {t.leaderboard}</Button>
                  </>
                ) : (
@@ -946,7 +918,7 @@ const App: React.FC = () => {
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className={`${btnBase} bg-green-900/80 border-green-500 text-white`}><Play size={22} fill="currentColor" /> {t.startGame}</Button>
                    {isAdmin && <Button fullWidth onClick={() => setGameStatus(GameStatus.ADMIN_DASHBOARD)} className={`${btnBase} bg-gray-800/80 border-gray-500 text-white`}><Wrench size={20} /> {t.adminPanel}</Button>}
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> {t.leaderboard}</Button>
-                   <Button fullWidth onClick={() => setShowAboutModal(true)} className={`${btnBase} bg-indigo-900/80 border-indigo-500 text-white`}><Info size={20} /> {t.about}</Button>
+                   <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> {t.help}</Button>
                    <Button fullWidth onClick={handleLogout} className={`${btnBase} bg-red-900/60 border-red-500/80 text-red-100`}><LogOut size={20} /> {t.logout}</Button>
                  </>
                )}
@@ -1472,7 +1444,7 @@ const App: React.FC = () => {
          {(gameStatus === GameStatus.WON || gameStatus === GameStatus.LOST) && renderGameOver(gameStatus === GameStatus.WON)}
          {showProfileModal && renderProfileModal()}
          {showPrivacyModal && renderPrivacyModal()}
-         {showAboutModal && renderAboutModal()}
+         {showHelp && renderHelpModal()}
       </div>
     </div>
   );
