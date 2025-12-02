@@ -884,20 +884,13 @@ const App: React.FC = () => {
             </button>
         </div>
 
-        {/* Top Right Privacy Button - VISIBLE */}
-        <div className="absolute top-4 right-4 z-[60]">
-            <button onClick={() => setShowPrivacyModal(true)} className="flex items-center justify-center p-2.5 bg-yellow-500/20 rounded-full text-yellow-400 hover:text-white border border-yellow-500 hover:bg-yellow-500 backdrop-blur-md transition-all shadow-lg hover:shadow-yellow-500/40 animate-pulse-slow" title={t.privacyTitle}>
-                <Shield size={22} fill="currentColor" className="text-yellow-500 hover:text-white" />
-            </button>
-        </div>
-
         <div className="flex flex-col min-h-full w-full justify-between">
             <div className="flex flex-col items-center w-full">
                 <div className="flex flex-col items-center justify-center pt-16 md:pt-24 shrink-0 relative z-20 px-4">
                    <div className="scale-105 md:scale-110"><GameLogo size="xl" /></div>
                    <div className="mt-10 md:mt-12 text-center z-30 px-4">
                      <p className="text-blue-100 text-sm md:text-base font-bold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t.slogan1}</p>
-                     <p className="text-yellow-400 text-lg md:text-xl font-black italic tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">{t.slogan2}</p>
+                     <p className="text-yellow-600 text-lg md:text-xl font-black tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">{t.slogan2}</p>
                    </div>
                 </div>
                 <div className="flex justify-between items-center px-6 w-full max-w-sm mx-auto gap-4 mt-4">
@@ -948,7 +941,6 @@ const App: React.FC = () => {
                    <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> {t.help}</Button>
                    <Button fullWidth onClick={() => setShowAboutModal(true)} className={`${btnBase} bg-indigo-900/80 border-indigo-500 text-white`}><Info size={20} /> {t.about}</Button>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> {t.leaderboard}</Button>
-                   <Button fullWidth onClick={() => setShowPrivacyModal(true)} className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> {t.privacy}</Button>
                  </>
                ) : (
                  <>

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { getQuestionsByTopic, TOPICS } from './constants';
 import { GameStatus, AnswerState, Lifelines, AudienceData, User, Question, Topic } from './types';
@@ -753,8 +752,8 @@ const App: React.FC = () => {
     <div className="fixed inset-0 bg-black/90 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
       <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030] relative`}>
         <button onClick={() => setShowHelp(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
-        <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-bold">{t.rulesTitle}</h2></div>
-        <div className="space-y-3 text-slate-300 text-sm md:text-base">
+        <div className="flex items-center gap-2 mb-4 text-teal-400"><HelpCircle size={28} /><h2 className="text-xl font-black">{t.rulesTitle}</h2></div>
+        <div className="space-y-3 text-slate-300 text-sm md:text-base font-medium">
            {t.rules.map((rule, idx) => (
              <p key={idx} className="flex items-start gap-2"><span className="text-yellow-500 font-bold">•</span><span>{rule}</span></p>
            ))}
@@ -770,13 +769,13 @@ const App: React.FC = () => {
         <button onClick={() => setShowAboutModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
         <div className="flex items-center gap-2 mb-4 text-slate-200 border-b border-slate-700 pb-2">
           <Info size={24} className="text-blue-400" />
-          <h2 className="text-xl font-bold">{t.aboutTitle}</h2>
+          <h2 className="text-xl font-black">{t.aboutTitle}</h2>
         </div>
         
         <div className="space-y-6">
             <div className="p-4 bg-slate-900/60 rounded-xl border border-blue-500/20">
                 <h3 className="text-blue-300 font-bold text-base mb-2">Bilməcə Live</h3>
-                <p className="text-slate-300 text-sm leading-relaxed">
+                <p className="text-slate-300 text-sm leading-relaxed font-medium">
                     {t.aboutContent}
                 </p>
             </div>
@@ -795,10 +794,10 @@ const App: React.FC = () => {
         <button onClick={() => setShowPrivacyModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24} /></button>
         <div className="flex items-center gap-2 mb-4 text-slate-200 border-b border-slate-700 pb-2">
           <Shield size={24} className="text-blue-400" />
-          <h2 className="text-xl font-bold">{t.privacyTitle}</h2>
+          <h2 className="text-xl font-black">{t.privacyTitle}</h2>
         </div>
         
-        <div className="space-y-4 text-slate-300 text-sm leading-relaxed">
+        <div className="space-y-4 text-slate-300 text-sm leading-relaxed font-medium">
             <p><strong>{t.privacyContent.updated}</strong></p>
             <p>{t.privacyContent.intro}</p>
             <h3 className="text-white font-bold">{t.privacyContent.collected}</h3>
@@ -820,33 +819,33 @@ const App: React.FC = () => {
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm animate-fade-in">
       <div className="bg-[#000030]/90 p-6 rounded-2xl border border-blue-500/50 shadow-2xl w-full max-w-md backdrop-blur-md relative">
          <button onClick={() => setShowProfileModal(false)} className="absolute top-4 right-4 text-slate-400 hover:text-white"><X size={24}/></button>
-         <h2 className="text-xl font-bold text-white mb-6">{t.profile}</h2>
+         <h2 className="text-xl font-black text-white mb-6">{t.profile}</h2>
          {currentUser && (
            <form onSubmit={handleProfileUpdate} className="space-y-4">
                <div>
                   <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.usernameImmutable}</label>
-                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed" />
+                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed font-medium" />
                </div>
                <div>
                   <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.nameSurname}</label>
-                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                </div>
                <div className="flex gap-3">
                   <div className="flex-1">
                     <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.age}</label>
-                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                   </div>
                   <div className="flex-1">
                     <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.gender}</label>
-                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors">
+                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium">
                       <option value="Kişi">{t.male}</option>
                       <option value="Qadın">{t.female}</option>
                     </select>
                   </div>
                </div>
                <div className="pt-2">
-                 <div className="flex justify-between text-sm text-slate-400 mb-2"><span>{t.totalPoints}:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
-                 <div className="flex justify-between text-sm text-slate-400"><span>{t.gamesPlayed}:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 mb-2 font-medium"><span>{t.totalPoints}:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 font-medium"><span>{t.gamesPlayed}:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
                </div>
                <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? t.saved : t.save}</Button>
            </form>
@@ -884,20 +883,13 @@ const App: React.FC = () => {
             </button>
         </div>
 
-        {/* Top Right Privacy Button - VISIBLE */}
-        <div className="absolute top-4 right-4 z-[60]">
-            <button onClick={() => setShowPrivacyModal(true)} className="flex items-center justify-center p-2.5 bg-yellow-500/20 rounded-full text-yellow-400 hover:text-white border border-yellow-500 hover:bg-yellow-500 backdrop-blur-md transition-all shadow-lg hover:shadow-yellow-500/40 animate-pulse-slow" title={t.privacyTitle}>
-                <Shield size={22} fill="currentColor" className="text-yellow-500 hover:text-white" />
-            </button>
-        </div>
-
         <div className="flex flex-col min-h-full w-full justify-between">
             <div className="flex flex-col items-center w-full">
                 <div className="flex flex-col items-center justify-center pt-16 md:pt-24 shrink-0 relative z-20 px-4">
                    <div className="scale-105 md:scale-110"><GameLogo size="xl" /></div>
                    <div className="mt-10 md:mt-12 text-center z-30 px-4">
-                     <p className="text-blue-100 text-sm md:text-base font-semibold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t.slogan1}</p>
-                     <p className="text-yellow-400 text-lg md:text-xl font-bold italic tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">{t.slogan2}</p>
+                     <p className="text-blue-100 text-sm md:text-base font-bold tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">{t.slogan1}</p>
+                     <p className="text-yellow-600 text-lg md:text-xl font-black tracking-widest drop-shadow-[0_2px_10px_rgba(234,179,8,0.5)]">{t.slogan2}</p>
                    </div>
                 </div>
                 <div className="flex justify-between items-center px-6 w-full max-w-sm mx-auto gap-4 mt-4">
@@ -905,14 +897,14 @@ const App: React.FC = () => {
                       <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
                       <div className="flex items-center gap-2 relative z-10">
                         <Trophy size={16} className="text-yellow-400 shrink-0" />
-                        <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">{t.highScore}</span><span className="text-sm font-bold text-white leading-none font-mono">{highestScore.toLocaleString()}</span></div>
+                        <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">{t.highScore}</span><span className="text-sm font-black text-white leading-none font-mono">{highestScore.toLocaleString()}</span></div>
                       </div>
                    </div>
                    <div className="flex-1 flex flex-col justify-center px-3 py-2 bg-[#000030]/80 border border-blue-600 rounded-xl shadow-[0_0_10px_rgba(37,99,235,0.3)] min-h-[50px] relative overflow-hidden group">
                       <div className="absolute inset-0 bg-blue-600/10 group-hover:bg-blue-600/20 transition-colors"></div>
                       <div className="flex items-center gap-2 relative z-10">
                         <Users size={16} className="text-blue-400 shrink-0" />
-                         <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">{t.players}</span><span className="text-sm font-bold text-white leading-none font-mono">{playerCount.toLocaleString()}</span></div>
+                         <div className="flex flex-col"><span className="text-[8px] text-blue-200 uppercase tracking-wider mb-0.5">{t.players}</span><span className="text-sm font-black text-white leading-none font-mono">{playerCount.toLocaleString()}</span></div>
                       </div>
                    </div>
                 </div>
@@ -948,7 +940,6 @@ const App: React.FC = () => {
                    <Button fullWidth onClick={() => setShowHelp(true)} className={`${btnBase} bg-teal-900/80 border-teal-500 text-white`}><HelpCircle size={20} /> {t.help}</Button>
                    <Button fullWidth onClick={() => setShowAboutModal(true)} className={`${btnBase} bg-indigo-900/80 border-indigo-500 text-white`}><Info size={20} /> {t.about}</Button>
                    <Button fullWidth onClick={() => setGameStatus(GameStatus.LEADERBOARD)} className={`${btnBase} bg-amber-900/80 border-amber-500 text-white`}><Trophy size={20} /> {t.leaderboard}</Button>
-                   <Button fullWidth onClick={() => setShowPrivacyModal(true)} className={`${btnBase} bg-slate-800/80 border-slate-600 text-slate-300 hover:text-white hover:border-slate-400`}><FileText size={20} /> {t.privacy}</Button>
                  </>
                ) : (
                  <>
@@ -977,7 +968,7 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
         <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-           <div className="flex items-center gap-3"><Trophy size={32} className="text-yellow-500" /><h2 className="text-xl font-bold text-white">{t.leaderboardTitle}</h2></div>
+           <div className="flex items-center gap-3"><Trophy size={32} className="text-yellow-500" /><h2 className="text-xl font-black text-white">{t.leaderboardTitle}</h2></div>
            <Button variant="secondary" onClick={() => setGameStatus(previousStatus || GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><ArrowLeft size={18} /></Button>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto bg-slate-900/60 border border-slate-700 rounded-xl p-4 space-y-2">
@@ -985,12 +976,12 @@ const App: React.FC = () => {
             <div key={user.username} className={`flex items-center justify-between p-4 rounded-lg border ${user.username === currentUser?.username ? 'bg-blue-900/40 border-blue-500' : 'bg-slate-800/80 border-slate-600'}`}>
                <div className="flex items-center gap-4">
                   <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold ${index < 3 ? 'bg-yellow-500 text-black' : 'bg-slate-700 text-slate-300'}`}>{index + 1}</span>
-                  <div><div className="font-bold text-white text-lg">{user.name}</div><div className="text-xs text-slate-400">{t.gamesPlayed}: {user.gamesPlayed}</div></div>
+                  <div><div className="font-bold text-white text-lg">{user.name}</div><div className="text-xs text-slate-400 font-medium">{t.gamesPlayed}: {user.gamesPlayed}</div></div>
                </div>
                <div className="text-green-400 font-mono font-bold text-xl">{user.totalPoints.toLocaleString()}</div>
             </div>
           ))}
-          {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10">{t.noPlayers}</div>}
+          {sortedUsers.length === 0 && <div className="text-center text-slate-400 mt-10 font-medium">{t.noPlayers}</div>}
         </div>
         {/* AdSense Leaderboard Bottom */}
         <AdSenseBanner dataAdSlot="1234567890" dataAdFormat="horizontal" />
@@ -1008,7 +999,7 @@ const App: React.FC = () => {
     return (
       <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10 overflow-hidden">
         <header className="flex justify-between items-center mb-4 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-           <div className="flex items-center gap-3"><Wrench size={32} className="text-gray-300" /><h2 className="text-xl font-bold text-white">{t.adminPanel}</h2></div>
+           <div className="flex items-center gap-3"><Wrench size={32} className="text-gray-300" /><h2 className="text-xl font-black text-white">{t.adminPanel}</h2></div>
            <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800">{t.logout}</Button>
         </header>
 
@@ -1019,7 +1010,7 @@ const App: React.FC = () => {
 
         {/* Search */}
         <div className="mb-4 relative shrink-0">
-          <input type="text" placeholder="Axtarış..." value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} className={`w-full p-3 pl-10 rounded-lg border ${inputClass}`} />
+          <input type="text" placeholder="Axtarış..." value={adminSearch} onChange={(e) => setAdminSearch(e.target.value)} className={`w-full p-3 pl-10 rounded-lg border font-medium ${inputClass}`} />
           <Search className="absolute left-3 top-3.5 text-slate-400" size={20} />
         </div>
 
@@ -1030,9 +1021,9 @@ const App: React.FC = () => {
                  <div>
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-white text-lg">{user.name}</span>
-                      <span className="text-xs text-blue-300 px-2 py-0.5 bg-blue-900/50 rounded-full">{user.username}</span>
+                      <span className="text-xs text-blue-300 px-2 py-0.5 bg-blue-900/50 rounded-full font-medium">{user.username}</span>
                     </div>
-                    <div className="text-sm text-slate-400 mt-1">{t.totalPoints}: <span className="text-green-400 font-mono font-bold">{user.totalPoints}</span> | {t.password}: <span className="text-red-300 font-mono">{user.password}</span></div>
+                    <div className="text-sm text-slate-400 mt-1 font-medium">{t.totalPoints}: <span className="text-green-400 font-mono font-bold">{user.totalPoints}</span> | {t.password}: <span className="text-red-300 font-mono">{user.password}</span></div>
                  </div>
                  <div className="flex gap-2">
                    <button onClick={() => startEditingUser(user)} className="p-2 bg-blue-700 text-white rounded-lg hover:bg-blue-600 transition-colors"><Edit size={16} /></button>
@@ -1058,8 +1049,8 @@ const App: React.FC = () => {
                           <button onClick={() => handleDeleteQuestion(q.id as string)} className="text-red-400 hover:text-white"><Trash2 size={16}/></button>
                        </div>
                     </div>
-                    <p className="text-white font-semibold mb-2">{q.text}</p>
-                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
+                    <p className="text-white font-bold mb-2">{q.text}</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-400 font-medium">
                        {q.options.map((opt, i) => (
                          <span key={i} className={i === q.correctAnswerIndex ? "text-green-400 font-bold" : ""}>{opt}</span>
                        ))}
@@ -1078,13 +1069,13 @@ const App: React.FC = () => {
              <div className={`${cardClass} p-6 rounded-2xl w-full max-w-md shadow-2xl bg-[#000030]`}>
                 <h3 className="text-xl font-bold mb-4 text-white">Redaktə et: {userToEdit.username}</h3>
                 <form onSubmit={handleAdminSaveUser} className="space-y-3">
-                   <div><label className="text-xs text-blue-300 block mb-1">{t.nameSurname}</label><input type="text" value={adminEditForm.name} onChange={e => setAdminEditForm({...adminEditForm, name: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
+                   <div><label className="text-xs text-blue-300 block mb-1">{t.nameSurname}</label><input type="text" value={adminEditForm.name} onChange={e => setAdminEditForm({...adminEditForm, name: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
                    <div className="flex gap-2">
-                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">{t.age}</label><input type="number" value={adminEditForm.age} onChange={e => setAdminEditForm({...adminEditForm, age: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
-                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">{t.gender}</label><select value={adminEditForm.gender} onChange={e => setAdminEditForm({...adminEditForm, gender: e.target.value as any})} className={`w-full p-2 rounded border ${inputClass}`}><option value="Kişi">{t.male}</option><option value="Qadın">{t.female}</option></select></div>
+                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">{t.age}</label><input type="number" value={adminEditForm.age} onChange={e => setAdminEditForm({...adminEditForm, age: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
+                      <div className="flex-1"><label className="text-xs text-blue-300 block mb-1">{t.gender}</label><select value={adminEditForm.gender} onChange={e => setAdminEditForm({...adminEditForm, gender: e.target.value as any})} className={`w-full p-2 rounded border font-medium ${inputClass}`}><option value="Kişi">{t.male}</option><option value="Qadın">{t.female}</option></select></div>
                    </div>
-                   <div><label className="text-xs text-red-300 block mb-1">{t.password}</label><input type="text" value={adminEditForm.password} onChange={e => setAdminEditForm({...adminEditForm, password: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
-                   <div><label className="text-xs text-green-300 block mb-1">{t.totalPoints}</label><input type="number" value={adminEditForm.totalPoints} onChange={e => setAdminEditForm({...adminEditForm, totalPoints: Number(e.target.value)})} className={`w-full p-2 rounded border ${inputClass}`} /></div>
+                   <div><label className="text-xs text-red-300 block mb-1">{t.password}</label><input type="text" value={adminEditForm.password} onChange={e => setAdminEditForm({...adminEditForm, password: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
+                   <div><label className="text-xs text-green-300 block mb-1">{t.totalPoints}</label><input type="number" value={adminEditForm.totalPoints} onChange={e => setAdminEditForm({...adminEditForm, totalPoints: Number(e.target.value)})} className={`w-full p-2 rounded border font-medium ${inputClass}`} /></div>
                    <div className="flex gap-2 mt-4"><Button type="submit" fullWidth className="bg-green-700">{t.save}</Button><Button type="button" fullWidth variant="secondary" onClick={() => setUserToEdit(null)}>Ləğv et</Button></div>
                 </form>
              </div>
@@ -1097,29 +1088,29 @@ const App: React.FC = () => {
              <div className={`${cardClass} p-6 rounded-2xl w-full max-w-lg shadow-2xl bg-[#000030] overflow-y-auto max-h-[90vh]`}>
                 <h3 className="text-xl font-bold mb-4 text-white">{questionToEdit ? "Sualı Düzəlt" : "Yeni Sual"}</h3>
                 <form onSubmit={handleSaveQuestion} className="space-y-3">
-                   <div><label className="text-xs text-blue-300 block mb-1">Sual Mətni</label><textarea value={questionForm.text} onChange={e => setQuestionForm({...questionForm, text: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
+                   <div><label className="text-xs text-blue-300 block mb-1">Sual Mətni</label><textarea value={questionForm.text} onChange={e => setQuestionForm({...questionForm, text: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
                    <div className="grid grid-cols-2 gap-2">
-                      <div><label className="text-xs text-slate-400">Variant A</label><input type="text" value={questionForm.optionA} onChange={e => setQuestionForm({...questionForm, optionA: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
-                      <div><label className="text-xs text-slate-400">Variant B</label><input type="text" value={questionForm.optionB} onChange={e => setQuestionForm({...questionForm, optionB: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
-                      <div><label className="text-xs text-slate-400">Variant C</label><input type="text" value={questionForm.optionC} onChange={e => setQuestionForm({...questionForm, optionC: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
-                      <div><label className="text-xs text-slate-400">Variant D</label><input type="text" value={questionForm.optionD} onChange={e => setQuestionForm({...questionForm, optionD: e.target.value})} className={`w-full p-2 rounded border ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant A</label><input type="text" value={questionForm.optionA} onChange={e => setQuestionForm({...questionForm, optionA: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant B</label><input type="text" value={questionForm.optionB} onChange={e => setQuestionForm({...questionForm, optionB: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant C</label><input type="text" value={questionForm.optionC} onChange={e => setQuestionForm({...questionForm, optionC: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
+                      <div><label className="text-xs text-slate-400">Variant D</label><input type="text" value={questionForm.optionD} onChange={e => setQuestionForm({...questionForm, optionD: e.target.value})} className={`w-full p-2 rounded border font-medium ${inputClass}`} required /></div>
                    </div>
                    <div className="flex gap-2">
                       <div className="flex-1">
                          <label className="text-xs text-green-300 block mb-1">Düzgün Variant</label>
-                         <select value={questionForm.correctAnswerIndex} onChange={e => setQuestionForm({...questionForm, correctAnswerIndex: Number(e.target.value)})} className={`w-full p-2 rounded border ${inputClass}`}>
+                         <select value={questionForm.correctAnswerIndex} onChange={e => setQuestionForm({...questionForm, correctAnswerIndex: Number(e.target.value)})} className={`w-full p-2 rounded border font-medium ${inputClass}`}>
                             <option value={0}>A</option><option value={1}>B</option><option value={2}>C</option><option value={3}>D</option>
                          </select>
                       </div>
                       <div className="flex-1">
                          <label className="text-xs text-blue-300 block mb-1">Mövzu</label>
-                         <select value={questionForm.topic} onChange={e => setQuestionForm({...questionForm, topic: e.target.value as Topic})} className={`w-full p-2 rounded border ${inputClass}`}>
+                         <select value={questionForm.topic} onChange={e => setQuestionForm({...questionForm, topic: e.target.value as Topic})} className={`w-full p-2 rounded border font-medium ${inputClass}`}>
                             {TOPICS.map(t => <option key={t.id} value={t.id}>{t.label.az}</option>)}
                          </select>
                       </div>
                       <div className="flex-1">
                          <label className="text-xs text-purple-300 block mb-1">Dil</label>
-                         <select value={questionForm.language} onChange={e => setQuestionForm({...questionForm, language: e.target.value as 'az' | 'en'})} className={`w-full p-2 rounded border ${inputClass}`}>
+                         <select value={questionForm.language} onChange={e => setQuestionForm({...questionForm, language: e.target.value as 'az' | 'en'})} className={`w-full p-2 rounded border font-medium ${inputClass}`}>
                             <option value="az">AZ</option>
                             <option value="en">EN</option>
                          </select>
@@ -1138,14 +1129,14 @@ const App: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-full p-6 w-full max-w-md mx-auto relative z-20">
       <div className="bg-[#000030]/90 p-8 rounded-2xl border border-blue-500/50 shadow-2xl w-full backdrop-blur-md">
          <div className="flex justify-center mb-6"><div className="p-3 bg-blue-900/50 rounded-full border border-blue-400"><LogIn size={32} className="text-blue-300"/></div></div>
-         <h2 className="text-2xl font-bold text-center text-white mb-6">{t.loginTitle}</h2>
-         {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2"><AlertCircle size={16}/>{authError}</div>}
+         <h2 className="text-2xl font-black text-center text-white mb-6">{t.loginTitle}</h2>
+         {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2 font-medium"><AlertCircle size={16}/>{authError}</div>}
          <form onSubmit={handleLogin} className="space-y-4">
-           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.username}</label><input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" placeholder={t.username} /></div>
-           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.password}</label><input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" placeholder={t.password} /></div>
+           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.username}</label><input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" placeholder={t.username} /></div>
+           <div><label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.password}</label><input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" placeholder={t.password} /></div>
            <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4">{isAuthLoading ? t.loading : t.login}</Button>
          </form>
-         <div className="mt-6 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">{t.back}</button></div>
+         <div className="mt-6 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline font-medium">{t.back}</button></div>
       </div>
     </div>
   );
@@ -1156,29 +1147,29 @@ const App: React.FC = () => {
          {!registrationSuccess ? (
            <>
              <div className="flex justify-center mb-4"><div className="p-3 bg-fuchsia-900/50 rounded-full border border-fuchsia-400"><UserPlus size={32} className="text-fuchsia-300"/></div></div>
-             <h2 className="text-2xl font-bold text-center text-white mb-4">{t.registerTitle}</h2>
-             {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2"><AlertCircle size={16}/>{authError}</div>}
+             <h2 className="text-2xl font-black text-center text-white mb-4">{t.registerTitle}</h2>
+             {authError && <div className="bg-red-900/50 border border-red-500 text-red-200 p-3 rounded mb-4 text-sm flex items-center gap-2 font-medium"><AlertCircle size={16}/>{authError}</div>}
              <form onSubmit={handleRegister} className="space-y-3">
                <div>
                  <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.username}</label>
                  <div className="relative">
-                   <input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className={`w-full bg-slate-800/80 border ${usernameStatus === 'taken' ? 'border-red-500' : usernameStatus === 'valid' ? 'border-green-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder={t.minChars} />
+                   <input type="text" value={authForm.username} onChange={e => setAuthForm({...authForm, username: e.target.value})} className={`w-full bg-slate-800/80 border font-medium ${usernameStatus === 'taken' ? 'border-red-500' : usernameStatus === 'valid' ? 'border-green-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder={t.minChars} />
                    {usernameStatus === 'checking' && <div className="absolute right-3 top-3.5"><div className="animate-spin h-4 w-4 border-2 border-fuchsia-500 rounded-full border-t-transparent"></div></div>}
                    {usernameStatus === 'valid' && <CheckCircle size={18} className="absolute right-3 top-3.5 text-green-500" />}
                  </div>
                </div>
                <div>
                   <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.nameSurname}</label>
-                  <input type="text" value={authForm.name} onChange={e => setAuthForm({...authForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors" />
+                  <input type="text" value={authForm.name} onChange={e => setAuthForm({...authForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors font-medium" />
                </div>
                <div className="flex gap-3">
                   <div className="flex-1">
                     <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.age}</label>
-                    <input type="number" value={authForm.age} onChange={e => setAuthForm({...authForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors" />
+                    <input type="number" value={authForm.age} onChange={e => setAuthForm({...authForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors font-medium" />
                   </div>
                   <div className="flex-1">
                     <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.gender}</label>
-                    <select value={authForm.gender} onChange={e => setAuthForm({...authForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors appearance-none">
+                    <select value={authForm.gender} onChange={e => setAuthForm({...authForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-fuchsia-500/30 rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors appearance-none font-medium">
                       <option value="">{t.select}</option>
                       <option value="Kişi">{t.male}</option>
                       <option value="Qadın">{t.female}</option>
@@ -1187,18 +1178,18 @@ const App: React.FC = () => {
                </div>
                <div>
                  <label className="text-fuchsia-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.password}</label>
-                 <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className={`w-full bg-slate-800/80 border ${passwordStatus === 'invalid' && authForm.password.length > 0 ? 'border-red-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder={t.passwordHint} />
+                 <input type="password" value={authForm.password} onChange={e => setAuthForm({...authForm, password: e.target.value})} className={`w-full bg-slate-800/80 border font-medium ${passwordStatus === 'invalid' && authForm.password.length > 0 ? 'border-red-500' : 'border-fuchsia-500/30'} rounded-lg p-3 text-white focus:border-fuchsia-400 outline-none transition-colors`} placeholder={t.passwordHint} />
                  <p className="text-[10px] text-slate-400 mt-1 ml-1">{t.passwordHint}</p>
                </div>
                <Button type="submit" fullWidth disabled={isAuthLoading} className="mt-4 bg-fuchsia-700 hover:bg-fuchsia-600 border-fuchsia-500">{isAuthLoading ? t.loading : t.registerTitle}</Button>
              </form>
-             <div className="mt-4 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline">{t.back}</button></div>
+             <div className="mt-4 text-center"><button onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="text-slate-400 hover:text-white text-sm underline font-medium">{t.back}</button></div>
            </>
          ) : (
            <div className="text-center py-8 animate-fade-in">
               <div className="mx-auto w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4 text-green-400 border-2 border-green-500"><Check size={32} /></div>
-              <h2 className="text-2xl font-bold text-white mb-2">{t.registerSuccess}</h2>
-              <p className="text-slate-300 mb-6">{t.registerSuccessDesc}</p>
+              <h2 className="text-2xl font-black text-white mb-2">{t.registerSuccess}</h2>
+              <p className="text-slate-300 mb-6 font-medium">{t.registerSuccessDesc}</p>
               <Button onClick={finishRegistration} fullWidth className="bg-green-600 border-green-400">{t.continue}</Button>
            </div>
          )}
@@ -1209,7 +1200,7 @@ const App: React.FC = () => {
   const renderTopicSelection = () => (
     <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-4 z-10">
       <div className="flex justify-between items-center mb-6 shrink-0 bg-slate-900/80 p-4 rounded-xl border border-slate-700">
-         <div className="flex items-center gap-3"><BrainCircuit size={32} className="text-blue-400" /><h2 className="text-xl font-bold text-white">{t.topicSelection}</h2></div>
+         <div className="flex items-center gap-3"><BrainCircuit size={32} className="text-blue-400" /><h2 className="text-xl font-black text-white">{t.topicSelection}</h2></div>
          <div className="flex gap-2">
             <Button variant="secondary" onClick={() => setShowProfileModal(true)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><UserIcon size={18} /></Button>
             <Button variant="secondary" onClick={() => setGameStatus(GameStatus.AUTH_CHOICE)} className="py-1 px-3 text-sm h-10 border-slate-600 bg-slate-800"><Home size={18} /></Button>
@@ -1240,8 +1231,8 @@ const App: React.FC = () => {
                    <Icon size={40} className="text-white drop-shadow-md" />
                 </div>
                 <div className="text-center">
-                   <h3 className="text-lg md:text-xl font-bold text-white mb-1">{topic.label[language]}</h3>
-                   <p className="text-xs md:text-sm text-slate-300">{topic.description[language]}</p>
+                   <h3 className="text-lg md:text-xl font-extrabold text-white mb-1">{topic.label[language]}</h3>
+                   <p className="text-xs md:text-sm text-slate-300 font-medium">{topic.description[language]}</p>
                 </div>
                 {isCompleted && <div className="absolute top-2 right-2 text-green-500"><CheckCircle size={24} /></div>}
              </button>
@@ -1285,7 +1276,7 @@ const App: React.FC = () => {
                     </div>
                 </div>
                 
-                <h2 className="text-2xl md:text-3xl font-bold text-white leading-relaxed text-center">{currentQ.text}</h2>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white leading-relaxed text-center">{currentQ.text}</h2>
              </div>
 
              {/* Options Grid */}
@@ -1315,8 +1306,8 @@ const App: React.FC = () => {
                          ${extraClass || "bg-slate-800/80 border-slate-600 hover:bg-blue-900/60 hover:border-blue-400 text-white focus:outline-none"}
                        `}
                      >
-                       <span className="font-bold text-yellow-500 mr-3 text-lg">{['A','B','C','D'][idx]}:</span>
-                       <span className="font-medium text-sm md:text-base">{opt}</span>
+                       <span className="font-extrabold text-yellow-500 mr-3 text-lg">{['A','B','C','D'][idx]}:</span>
+                       <span className="font-bold text-sm md:text-base">{opt}</span>
                      </button>
                    );
                 })}
@@ -1376,9 +1367,9 @@ const App: React.FC = () => {
                   <button onClick={() => { setAiHint(null); setIsTimerPaused(false); }} className="absolute top-3 right-3 text-slate-400 hover:text-white"><X size={20}/></button>
                   <div className="flex items-center gap-3 mb-4 text-emerald-400 border-b border-emerald-500/30 pb-3">
                      <BrainCircuit size={32} />
-                     <h3 className="text-xl font-bold">{t.aiSays}</h3>
+                     <h3 className="text-xl font-black">{t.aiSays}</h3>
                   </div>
-                  <p className="text-white text-lg leading-relaxed italic">"{aiHint}"</p>
+                  <p className="text-white text-lg leading-relaxed italic font-medium">"{aiHint}"</p>
                   <Button onClick={() => { setAiHint(null); setIsTimerPaused(false); }} fullWidth className="mt-6 bg-emerald-700 hover:bg-emerald-600 border-emerald-500">{t.thanks}</Button>
                </div>
             </div>
@@ -1391,35 +1382,35 @@ const App: React.FC = () => {
      <div className="flex flex-col items-center justify-center min-h-full p-6 w-full max-w-md mx-auto relative z-20">
       <div className="bg-[#000030]/90 p-8 rounded-2xl border border-blue-500/50 shadow-2xl w-full backdrop-blur-md">
          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">{t.profile}</h2>
+            <h2 className="text-2xl font-black text-white">{t.profile}</h2>
             <button onClick={() => setGameStatus(GameStatus.TOPIC_SELECTION)} className="text-slate-400 hover:text-white"><X size={24}/></button>
          </div>
          {currentUser && (
            <form onSubmit={handleProfileUpdate} className="space-y-4">
                <div>
                   <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.usernameImmutable}</label>
-                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed" />
+                  <input type="text" value={currentUser.username} disabled className="w-full bg-slate-900/50 border border-slate-700 rounded-lg p-3 text-slate-400 cursor-not-allowed font-medium" />
                </div>
                <div>
                   <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.nameSurname}</label>
-                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                  <input type="text" value={editProfileForm.name || currentUser.name} onChange={e => setEditProfileForm({...editProfileForm, name: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                </div>
                <div className="flex gap-3">
                   <div className="flex-1">
                     <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.age}</label>
-                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors" />
+                    <input type="number" value={editProfileForm.age || currentUser.age} onChange={e => setEditProfileForm({...editProfileForm, age: e.target.value})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium" />
                   </div>
                   <div className="flex-1">
                     <label className="text-blue-300 text-xs uppercase font-bold ml-1 mb-1 block">{t.gender}</label>
-                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors">
+                    <select value={editProfileForm.gender || currentUser.gender} onChange={e => setEditProfileForm({...editProfileForm, gender: e.target.value as any})} className="w-full bg-slate-800/80 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none transition-colors font-medium">
                       <option value="Kişi">{t.male}</option>
                       <option value="Qadın">{t.female}</option>
                     </select>
                   </div>
                </div>
                <div className="pt-2">
-                 <div className="flex justify-between text-sm text-slate-400 mb-2"><span>{t.totalPoints}:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
-                 <div className="flex justify-between text-sm text-slate-400"><span>{t.gamesPlayed}:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 mb-2 font-medium"><span>{t.totalPoints}:</span> <span className="text-yellow-500 font-bold">{currentUser.totalPoints}</span></div>
+                 <div className="flex justify-between text-sm text-slate-400 font-medium"><span>{t.gamesPlayed}:</span> <span className="text-white font-bold">{currentUser.gamesPlayed}</span></div>
                </div>
                <Button type="submit" fullWidth className="mt-4">{profileSaveStatus === 'saved' ? t.saved : t.save}</Button>
            </form>
@@ -1435,8 +1426,8 @@ const App: React.FC = () => {
               {isWin ? <Trophy size={48} /> : <LogOut size={48} className="ml-1" />}
            </div>
            
-           <h1 className="text-3xl md:text-4xl font-extrabold text-white mb-2 drop-shadow-lg uppercase tracking-wider">{isWin ? t.congrats : t.youLost}</h1>
-           <p className={`text-lg md:text-xl font-medium mb-8 ${isWin ? 'text-green-200' : 'text-red-200'}`}>
+           <h1 className="text-3xl md:text-4xl font-black text-white mb-2 drop-shadow-lg uppercase tracking-wider">{isWin ? t.congrats : t.youLost}</h1>
+           <p className={`text-lg md:text-xl font-bold mb-8 ${isWin ? 'text-green-200' : 'text-red-200'}`}>
              {isWin 
                ? t.amazingWin 
                : lossReason === 'timeout' 
@@ -1445,8 +1436,8 @@ const App: React.FC = () => {
            </p>
            
            <div className="bg-black/30 rounded-xl p-4 mb-8 border border-white/10">
-              <div className="text-slate-300 text-sm uppercase tracking-widest mb-1">{t.scoreEarned}</div>
-              <div className="text-4xl font-bold text-yellow-400 font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <div className="text-slate-300 text-sm uppercase tracking-widest mb-1 font-bold">{t.scoreEarned}</div>
+              <div className="text-4xl font-black text-yellow-400 font-mono drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
                 {(isWin ? questions.length : currentQuestionIndex) * 50}
               </div>
            </div>
